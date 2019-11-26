@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<block>
+  <name>analyzer</name>
+  <key>drone_filter_analyzer</key>
+  <category>[drone_filter]</category>
+  <import>import drone_filter</import>
+  <make>drone_filter.analyzer($sample_rate, $center_frequency)</make>
+  
+  <param>
+    <name>Sample Rate</name>
+    <key>sample_rate</key>
+    <type>float</type>
+  </param>
+
+  <param>
+    <name>Center Frequency</name>
+    <key>center_frequency</key>
+    <type>float</type>
+  </param>
+
+  <sink>
+    <name>in</name>
+    <type>complex</type>
+  </sink>
+
+</block>

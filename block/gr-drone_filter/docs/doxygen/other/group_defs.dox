@@ -1,0 +1,7 @@
+/*!
+ * \defgroup block GNU Radio DRONE_FILTER C++ Signal Processing Blocks
+ * \brief All C++ blocks that can be used from the DRONE_FILTER GNU Radio
+ *        module are listed here or in the subcategories below.
+ *
+ */
+
