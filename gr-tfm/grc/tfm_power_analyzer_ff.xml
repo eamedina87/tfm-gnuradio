@@ -4,41 +4,36 @@
   <key>tfm_power_analyzer_ff</key>
   <category>[tfm]</category>
   <import>import tfm</import>
-  <make>tfm.power_analyzer_ff($sample_rate, $center_frequency, $vector_length, $directory)</make>
-  <!-- Make one 'param' node for every Parameter you want settable from the GUI.
-       Sub-nodes:
-       * name
-       * key (makes the value accessible as $keyname, e.g. in the make node)
-       * type -->
+  <make>tfm.power_analyzer_ff(self.samp_rate, self.freq, self.fft_size, self.directory)</make>
+  
   <param>
     <name>Sample Rate</name>
     <key>sample_rate</key>
+    <value>samp_rate</value>
     <type>float</type>
   </param>
 
   <param>
     <name>Center Frequency</name>
     <key>center_frequency</key>
+    <value>freq</value>
     <type>float</type>
   </param>
 
   <param>
     <name>Vector Length</name>
     <key>vector_length</key>
+    <value>fft_size</value>
     <type>float</type>
   </param>
 
   <param>
     <name>File Directory</name>
     <key>directory</key>
+    <value>directory</value>
     <type>string</type>
   </param>
 
-  <!-- Make one 'sink' node per input. Sub-nodes:
-       * name (an identifier for the GUI)
-       * type
-       * vlen
-       * optional (set to 1 for optional inputs) -->
   <sink>
     <name>in</name>
     <type>float</type>

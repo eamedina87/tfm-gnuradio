@@ -38,6 +38,9 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/gnuradio/grc/blocks" TYPE FILE FILES "/home/eamedina/Dropbox/UPC/TFM/gnuRadio/gr-tfm/grc/tfm_power_analyzer_ff.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/gnuradio/grc/blocks" TYPE FILE FILES
+    "/home/eamedina/Dropbox/UPC/TFM/gnuRadio/gr-tfm/grc/tfm_power_analyzer_ff.xml"
+    "/home/eamedina/Dropbox/UPC/TFM/gnuRadio/gr-tfm/grc/tfm_power_comparator_ff.xml"
+    )
 endif()
 

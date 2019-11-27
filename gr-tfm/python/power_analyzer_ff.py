@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # 
-# Copyright 2019 <+YOU OR YOUR COMPANY+>.
+# Copyright 2019 ERICK ADOLFO MEDINA MORENO.
 # 
 # This is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -60,7 +60,10 @@ class power_analyzer_ff(gr.sync_block):
             iterator = numpy.nditer(value, flags=['f_index'])
             file_index = 0
             if file_exists:
-                file_index = int(file.readline()) #read number of values per row
+                try:
+                    file_index = int(file.readline()) #read number of values per row
+                except Exception:
+                    file_index = 0
                 #print("file index: %d" % file_index)
             temp_file = open(filename_temp, 'w+')
             temp_file.write("%d\n" % (file_index+1))

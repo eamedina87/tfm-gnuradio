@@ -4,35 +4,71 @@
   <key>tfm_power_comparator_ff</key>
   <category>[tfm]</category>
   <import>import tfm</import>
-  <make>tfm.power_comparator_ff($sample_rate, $center_frequency, $fft_size, $directory, $mode, $diff_fixed_db, $diff_percentage)</make>
-  <!-- Make one 'param' node for every Parameter you want settable from the GUI.
-       Sub-nodes:
-       * name
-       * key (makes the value accessible as $keyname, e.g. in the make node)
-       * type -->
+  <make>tfm.power_comparator_ff(self.samp_rate, self.freq, self.fft_size, self.directory, $diff_fixed_db, $diff_percentage)</make>
+  
   <param>
-    <name>...</name>
-    <key>...</key>
-    <type>...</type>
+    <name>Sample Rate</name>
+    <key>sample_rate</key>
+    <value>samp_rate</value>
+    <type>float</type>
   </param>
 
-  <!-- Make one 'sink' node per input. Sub-nodes:
-       * name (an identifier for the GUI)
-       * type
-       * vlen
-       * optional (set to 1 for optional inputs) -->
+  <param>
+    <name>Center Frequency</name>
+    <key>center_frequency</key>
+    <value>freq</value>
+    <type>float</type>
+  </param>
+
+  <param>
+    <name>Vector Length</name>
+    <key>vector_length</key>
+    <value>fft_size</value>
+    <type>float</type>
+  </param>
+
+  <param>
+    <name>File Directory</name>
+    <key>directory</key>
+    <value>directory</value>
+    <type>string</type>
+  </param>
+
+<param>
+    <name>Mode</name>
+    <key>mode</key>
+    <value>mode_percentage</value>
+    <type>enum</type>
+    <option>
+      <name>Percentage</name>
+      <key>mode_percentage</key>
+    </option>
+    <option>
+      <name>Fixed Value</name>
+      <key>mode_fixed_value</key>
+    </option>
+</param>
+
+<param>
+    <name>Percentage</name>
+    <key>diff_percentage</key>
+    <value>0</value>
+    <type>float</type>
+    <hide>#if $mode() == 'mode_percentage' then 'none' else 'all'#</hide>
+  </param>
+
+  <param>
+    <name>Fixed Value in db</name>
+    <key>diff_fixed_db</key>
+    <value>0</value>
+    <type>float</type>
+    <hide>#if $mode() == 'mode_fixed_value' then 'none' else 'all'#</hide>
+  </param>  
+
   <sink>
     <name>in</name>
-    <type><!-- e.g. int, float, complex, byte, short, xxx_vector, ...--></type>
+    <type>float</type>
+    <vlen>$vector_length</vlen>
   </sink>
 
-  <!-- Make one 'source' node per output. Sub-nodes:
-       * name (an identifier for the GUI)
-       * type
-       * vlen
-       * optional (set to 1 for optional inputs) -->
-  <source>
-    <name>out</name>
-    <type><!-- e.g. int, float, complex, byte, short, xxx_vector, ...--></type>
-  </source>
 </block>

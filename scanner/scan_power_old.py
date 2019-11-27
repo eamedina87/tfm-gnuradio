@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Top Block
-# Generated: Wed Nov 27 02:05:36 2019
+# Generated: Tue Nov 26 01:16:57 2019
 ##################################################
 
 from distutils.version import StrictVersion
@@ -65,17 +65,16 @@ class top_block(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.samp_rate = samp_rate = 20000000
+        self.samp_rate = samp_rate = 10000000
         self.freq_min = freq_min = 2400e6
         self.freq_max = freq_max = 2490e6
         self.freq = freq = freq_min+(samp_rate/2)
         self.fft_size = fft_size = 256
-        self.directory = directory = "/home/eamedina/Documentos/freq_docs"
 
         ##################################################
         # Blocks
         ##################################################
-        self.tfm_power_comparator_ff_0 = tfm.power_comparator_ff(self.samp_rate, self.freq, self.fft_size, self.directory, 3, 1)
+        self.tfm_power_analyzer_ff_0 = tfm.power_analyzer_ff(samp_rate, freq, fft_size)
         self.osmosdr_source_0 = osmosdr.source( args="numchan=" + str(1) + " " + '' )
         self.osmosdr_source_0.set_sample_rate(samp_rate)
         self.osmosdr_source_0.set_center_freq(freq, 0)
@@ -101,8 +100,19 @@ class top_block(gr.top_block, Qt.QWidget):
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.logpwrfft_x_0, 0), (self.tfm_power_comparator_ff_0, 0))
+        self.connect((self.logpwrfft_x_0, 0), (self.tfm_power_analyzer_ff_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.logpwrfft_x_0, 0))
+
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(100)
+        self.timer.timeout.connect(self.recurring_timer)
+        self.timer.start()
+
+    def recurring_timer(self):
+        if (self.get_freq()+self.samp_rate >= self.get_freq_max()):
+            self.set_freq(self.get_freq_min()+self.samp_rate/2)
+        else:
+            self.set_freq(self.get_freq()+self.samp_rate)
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "top_block")
@@ -117,6 +127,8 @@ class top_block(gr.top_block, Qt.QWidget):
         self.set_freq(self.freq_min+(self.samp_rate/2))
         self.osmosdr_source_0.set_sample_rate(self.samp_rate)
         self.logpwrfft_x_0.set_sample_rate(self.samp_rate)
+        self.tfm_power_analyzer_ff_0.set_sample_rate(self.samp_rate)
+
 
     def get_freq_min(self):
         return self.freq_min
@@ -137,18 +149,13 @@ class top_block(gr.top_block, Qt.QWidget):
     def set_freq(self, freq):
         self.freq = freq
         self.osmosdr_source_0.set_center_freq(self.freq, 0)
+        self.tfm_power_analyzer_ff_0.set_center_freq(self.samp_rate)
 
     def get_fft_size(self):
         return self.fft_size
 
     def set_fft_size(self, fft_size):
         self.fft_size = fft_size
-
-    def get_directory(self):
-        return self.directory
-
-    def set_directory(self, directory):
-        self.directory = directory
 
 
 def main(top_block_cls=top_block, options=None):
