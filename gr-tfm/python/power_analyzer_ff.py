@@ -47,17 +47,18 @@ class power_analyzer_ff(gr.sync_block):
         filename = "{dir}/{file}.txt".format(dir=self.directory, file=file_base)
         filename_temp = "{dir}/{file}_tmp.txt".format(dir=self.directory,file=file_base)
         #print(filename)
-        file_exists = False
-        try:
-            file = open(filename, 'r')
-            file_exists = True
-        except IOError:
-            file = open(filename, 'w+')
         in0 = input_items[0]
         start_freq = self.center_freq - self.samp_rate / 2
         #print("start_freq %.2f " % start_freq)
-        for i, value in enumerate(in0):
+        shifted = numpy.fft.fftshift(in0)
+        for i, value in enumerate(shifted):
             iterator = numpy.nditer(value, flags=['f_index'])
+            file_exists = False
+            try:
+                file = open(filename, 'r')
+                file_exists = True
+            except IOError:
+                file = open(filename, 'w+')    
             file_index = 0
             if file_exists:
                 try:

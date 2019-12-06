@@ -66,11 +66,11 @@ class top_block(gr.top_block, Qt.QWidget):
         # Variables
         ##################################################
         self.samp_rate = samp_rate = 20000000
-        self.freq_min = freq_min = 2400e6
-        self.freq_max = freq_max = 2490e6
+        self.freq_min = freq_min = 0e6
+        self.freq_max = freq_max = 6000e6
         self.freq = freq = freq_min+(samp_rate/2)
-        self.fft_size = fft_size = 256
-        self.directory = directory = "/home/eamedina/Documentos/freq_docs"
+        self.fft_size = fft_size = 2048
+        self.directory = directory = "/home/eamedina/Documentos/freq_docs/on"
 
         ##################################################
         # Blocks
@@ -105,7 +105,7 @@ class top_block(gr.top_block, Qt.QWidget):
         self.connect((self.osmosdr_source_0, 0), (self.logpwrfft_x_0, 0))
 
         self.timer = QtCore.QTimer()
-        self.timer.setInterval(100)
+        self.timer.setInterval(50)
         self.timer.timeout.connect(self.recurring_timer)
         self.timer.start()
 

@@ -4,7 +4,7 @@
   <key>tfm_power_comparator_ff</key>
   <category>[tfm]</category>
   <import>import tfm</import>
-  <make>tfm.power_comparator_ff(self.samp_rate, self.freq, self.fft_size, self.directory, $diff_fixed_db, $diff_percentage)</make>
+  <make>tfm.power_comparator_ff(self.samp_rate, self.freq, self.fft_size, self.directory, $mode, $diff_fixed_db, $diff_percentage)</make>
   
   <param>
     <name>Sample Rate</name>
@@ -37,15 +37,15 @@
 <param>
     <name>Mode</name>
     <key>mode</key>
-    <value>mode_percentage</value>
-    <type>enum</type>
+    <value>1</value>
+    <type>float</type>
     <option>
       <name>Percentage</name>
-      <key>mode_percentage</key>
+      <key>1</key>
     </option>
     <option>
       <name>Fixed Value</name>
-      <key>mode_fixed_value</key>
+      <key>2</key>
     </option>
 </param>
 
@@ -54,7 +54,7 @@
     <key>diff_percentage</key>
     <value>0</value>
     <type>float</type>
-    <hide>#if $mode() == 'mode_percentage' then 'none' else 'all'#</hide>
+    <hide>#if $mode() == 1 then 'none' else 'all'#</hide>
   </param>
 
   <param>
@@ -62,7 +62,7 @@
     <key>diff_fixed_db</key>
     <value>0</value>
     <type>float</type>
-    <hide>#if $mode() == 'mode_fixed_value' then 'none' else 'all'#</hide>
+    <hide>#if $mode() == 2 then 'none' else 'all'#</hide>
   </param>  
 
   <sink>
