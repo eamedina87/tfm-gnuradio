@@ -67,8 +67,8 @@ class power_comparator_ff(gr.sync_block):
         log_file = open(filename_log, 'a+')
         log_file.write(datetime.now().strftime('%Y%m%d %H:%M:%S:%f')+" ")
         log_file.write("files: " + filename_power+ ";" + filename_result +"\n")
-        shifted = numpy.fft.fftshift(in0)
-        for i, value in enumerate(shifted):
+        #shifted = numpy.fft.fftshift(in0)
+        for i, value in enumerate(in0):
             #log_file.write("For index: %d\n" % (i))
             file_power_exists = False
             try:

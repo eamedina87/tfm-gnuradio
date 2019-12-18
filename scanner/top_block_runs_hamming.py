@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Top Block
-# Generated: Wed Dec 18 14:03:17 2019
+# Generated: Wed Dec 18 12:27:27 2019
 ##################################################
 
 from distutils.version import StrictVersion
@@ -24,6 +24,7 @@ from gnuradio import eng_notation
 from gnuradio import gr
 from gnuradio import qtgui
 from gnuradio.eng_option import eng_option
+from gnuradio.fft import logpwrfft
 from gnuradio.filter import firdes
 from optparse import OptionParser
 import osmosdr
@@ -71,15 +72,14 @@ class top_block(gr.top_block, Qt.QWidget):
         self.freq_min = freq_min = 2400e6
         self.freq_max = freq_max = 2490e6
         self.freq = freq = freq_min+(samp_rate/2)
-        self.fft_size = fft_size = 1024
-        self.directory_0 = directory_0 = "/home/eamedina/Documentos/freq_docs"
+        self.fft_size = fft_size = 2048
         self.directory = directory = "/home/eamedina/Documentos/freq_docs/fft"
 
         ##################################################
         # Blocks
         ##################################################
         self.tfm_logpowerfft_win_0 = tfm.logpowerfft_win(self.samp_rate, self.fft_size, 2, 30)
-        self.qtgui_vector_sink_f_1_0 = qtgui.vector_sink_f(
+        self.qtgui_vector_sink_f_0_0 = qtgui.vector_sink_f(
             fft_size,
             0,
             1.0,
@@ -88,13 +88,13 @@ class top_block(gr.top_block, Qt.QWidget):
             "",
             1 # Number of inputs
         )
-        self.qtgui_vector_sink_f_1_0.set_update_time(0.10)
-        self.qtgui_vector_sink_f_1_0.set_y_axis(-120, 10)
-        self.qtgui_vector_sink_f_1_0.enable_autoscale(False)
-        self.qtgui_vector_sink_f_1_0.enable_grid(True)
-        self.qtgui_vector_sink_f_1_0.set_x_axis_units("")
-        self.qtgui_vector_sink_f_1_0.set_y_axis_units("")
-        self.qtgui_vector_sink_f_1_0.set_ref_level(-90)
+        self.qtgui_vector_sink_f_0_0.set_update_time(0.10)
+        self.qtgui_vector_sink_f_0_0.set_y_axis(-140, 10)
+        self.qtgui_vector_sink_f_0_0.enable_autoscale(False)
+        self.qtgui_vector_sink_f_0_0.enable_grid(False)
+        self.qtgui_vector_sink_f_0_0.set_x_axis_units("")
+        self.qtgui_vector_sink_f_0_0.set_y_axis_units("")
+        self.qtgui_vector_sink_f_0_0.set_ref_level(0)
 
         labels = ['', '', '', '', '',
                   '', '', '', '', '']
@@ -106,39 +106,56 @@ class top_block(gr.top_block, Qt.QWidget):
                   1.0, 1.0, 1.0, 1.0, 1.0]
         for i in xrange(1):
             if len(labels[i]) == 0:
-                self.qtgui_vector_sink_f_1_0.set_line_label(i, "Data {0}".format(i))
+                self.qtgui_vector_sink_f_0_0.set_line_label(i, "Data {0}".format(i))
             else:
-                self.qtgui_vector_sink_f_1_0.set_line_label(i, labels[i])
-            self.qtgui_vector_sink_f_1_0.set_line_width(i, widths[i])
-            self.qtgui_vector_sink_f_1_0.set_line_color(i, colors[i])
-            self.qtgui_vector_sink_f_1_0.set_line_alpha(i, alphas[i])
+                self.qtgui_vector_sink_f_0_0.set_line_label(i, labels[i])
+            self.qtgui_vector_sink_f_0_0.set_line_width(i, widths[i])
+            self.qtgui_vector_sink_f_0_0.set_line_color(i, colors[i])
+            self.qtgui_vector_sink_f_0_0.set_line_alpha(i, alphas[i])
 
-        self._qtgui_vector_sink_f_1_0_win = sip.wrapinstance(self.qtgui_vector_sink_f_1_0.pyqwidget(), Qt.QWidget)
-        self.top_layout.addWidget(self._qtgui_vector_sink_f_1_0_win)
-        self.qtgui_sink_x_0 = qtgui.sink_c(
-        	fft_size, #fftsize
-        	firdes.WIN_BLACKMAN_hARRIS, #wintype
-        	freq, #fc
-        	samp_rate, #bw
-        	"", #name
-        	True, #plotfreq
-        	True, #plotwaterfall
-        	True, #plottime
-        	True, #plotconst
+        self._qtgui_vector_sink_f_0_0_win = sip.wrapinstance(self.qtgui_vector_sink_f_0_0.pyqwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_vector_sink_f_0_0_win)
+        self.qtgui_vector_sink_f_0 = qtgui.vector_sink_f(
+            fft_size,
+            0,
+            1.0,
+            "x-Axis",
+            "y-Axis",
+            "",
+            1 # Number of inputs
         )
-        self.qtgui_sink_x_0.set_update_time(1.0/10)
-        self._qtgui_sink_x_0_win = sip.wrapinstance(self.qtgui_sink_x_0.pyqwidget(), Qt.QWidget)
-        self.top_layout.addWidget(self._qtgui_sink_x_0_win)
+        self.qtgui_vector_sink_f_0.set_update_time(0.10)
+        self.qtgui_vector_sink_f_0.set_y_axis(-140, 10)
+        self.qtgui_vector_sink_f_0.enable_autoscale(False)
+        self.qtgui_vector_sink_f_0.enable_grid(False)
+        self.qtgui_vector_sink_f_0.set_x_axis_units("")
+        self.qtgui_vector_sink_f_0.set_y_axis_units("")
+        self.qtgui_vector_sink_f_0.set_ref_level(0)
 
-        self.qtgui_sink_x_0.enable_rf_freq(False)
+        labels = ['', '', '', '', '',
+                  '', '', '', '', '']
+        widths = [1, 1, 1, 1, 1,
+                  1, 1, 1, 1, 1]
+        colors = ["blue", "red", "green", "black", "cyan",
+                  "magenta", "yellow", "dark red", "dark green", "dark blue"]
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+                  1.0, 1.0, 1.0, 1.0, 1.0]
+        for i in xrange(1):
+            if len(labels[i]) == 0:
+                self.qtgui_vector_sink_f_0.set_line_label(i, "Data {0}".format(i))
+            else:
+                self.qtgui_vector_sink_f_0.set_line_label(i, labels[i])
+            self.qtgui_vector_sink_f_0.set_line_width(i, widths[i])
+            self.qtgui_vector_sink_f_0.set_line_color(i, colors[i])
+            self.qtgui_vector_sink_f_0.set_line_alpha(i, alphas[i])
 
-
-
+        self._qtgui_vector_sink_f_0_win = sip.wrapinstance(self.qtgui_vector_sink_f_0.pyqwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_vector_sink_f_0_win)
         self.osmosdr_source_0 = osmosdr.source( args="numchan=" + str(1) + " " + '' )
         self.osmosdr_source_0.set_sample_rate(samp_rate)
         self.osmosdr_source_0.set_center_freq(freq, 0)
         self.osmosdr_source_0.set_freq_corr(0, 0)
-        self.osmosdr_source_0.set_dc_offset_mode(1, 0)
+        self.osmosdr_source_0.set_dc_offset_mode(2, 0)
         self.osmosdr_source_0.set_iq_balance_mode(0, 0)
         self.osmosdr_source_0.set_gain_mode(False, 0)
         self.osmosdr_source_0.set_gain(0, 0)
@@ -147,13 +164,22 @@ class top_block(gr.top_block, Qt.QWidget):
         self.osmosdr_source_0.set_antenna('', 0)
         self.osmosdr_source_0.set_bandwidth(0, 0)
 
+        self.logpwrfft_x_0 = logpwrfft.logpwrfft_c(
+        	sample_rate=samp_rate,
+        	fft_size=fft_size,
+        	ref_scale=2,
+        	frame_rate=30,
+        	avg_alpha=1.0,
+        	average=False,
+        )
 
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.osmosdr_source_0, 0), (self.qtgui_sink_x_0, 0))
+        self.connect((self.logpwrfft_x_0, 0), (self.qtgui_vector_sink_f_0, 0))
+        self.connect((self.osmosdr_source_0, 0), (self.logpwrfft_x_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.tfm_logpowerfft_win_0, 0))
-        self.connect((self.tfm_logpowerfft_win_0, 0), (self.qtgui_vector_sink_f_1_0, 0))
+        self.connect((self.tfm_logpowerfft_win_0, 0), (self.qtgui_vector_sink_f_0_0, 0))
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "top_block")
@@ -166,8 +192,8 @@ class top_block(gr.top_block, Qt.QWidget):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.set_freq(self.freq_min+(self.samp_rate/2))
-        self.qtgui_sink_x_0.set_frequency_range(self.freq, self.samp_rate)
         self.osmosdr_source_0.set_sample_rate(self.samp_rate)
+        self.logpwrfft_x_0.set_sample_rate(self.samp_rate)
 
     def get_freq_min(self):
         return self.freq_min
@@ -187,7 +213,6 @@ class top_block(gr.top_block, Qt.QWidget):
 
     def set_freq(self, freq):
         self.freq = freq
-        self.qtgui_sink_x_0.set_frequency_range(self.freq, self.samp_rate)
         self.osmosdr_source_0.set_center_freq(self.freq, 0)
 
     def get_fft_size(self):
@@ -195,12 +220,6 @@ class top_block(gr.top_block, Qt.QWidget):
 
     def set_fft_size(self, fft_size):
         self.fft_size = fft_size
-
-    def get_directory_0(self):
-        return self.directory_0
-
-    def set_directory_0(self, directory_0):
-        self.directory_0 = directory_0
 
     def get_directory(self):
         return self.directory

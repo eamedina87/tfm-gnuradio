@@ -3,11 +3,15 @@
 /usr/local/lib/python2.7/dist-packages/tfm/__init__.py
 /usr/local/lib/python2.7/dist-packages/tfm/power_analyzer_ff.py
 /usr/local/lib/python2.7/dist-packages/tfm/power_comparator_ff.py
+/usr/local/lib/python2.7/dist-packages/tfm/logpowerfft_win.py
 /usr/local/lib/python2.7/dist-packages/tfm/__init__.pyc
 /usr/local/lib/python2.7/dist-packages/tfm/power_analyzer_ff.pyc
 /usr/local/lib/python2.7/dist-packages/tfm/power_comparator_ff.pyc
+/usr/local/lib/python2.7/dist-packages/tfm/logpowerfft_win.pyc
 /usr/local/lib/python2.7/dist-packages/tfm/__init__.pyo
 /usr/local/lib/python2.7/dist-packages/tfm/power_analyzer_ff.pyo
 /usr/local/lib/python2.7/dist-packages/tfm/power_comparator_ff.pyo
+/usr/local/lib/python2.7/dist-packages/tfm/logpowerfft_win.pyo
 /usr/local/share/gnuradio/grc/blocks/tfm_power_analyzer_ff.xml
 /usr/local/share/gnuradio/grc/blocks/tfm_power_comparator_ff.xml
+/usr/local/share/gnuradio/grc/blocks/tfm_logpowerfft_win.xml

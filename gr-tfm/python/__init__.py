@@ -33,4 +33,5 @@ except ImportError:
 # import any pure python here
 from power_analyzer_ff import power_analyzer_ff
 from power_comparator_ff import power_comparator_ff
+from logpowerfft_win import logpowerfft_win
 #

@@ -19,5 +19,6 @@
 
 install(FILES
     tfm_power_analyzer_ff.xml
-    tfm_power_comparator_ff.xml DESTINATION share/gnuradio/grc/blocks
+    tfm_power_comparator_ff.xml
+    tfm_logpowerfft_win.xml DESTINATION share/gnuradio/grc/blocks
 )

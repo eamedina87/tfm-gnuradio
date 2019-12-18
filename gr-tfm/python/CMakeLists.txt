@@ -32,7 +32,8 @@ GR_PYTHON_INSTALL(
     FILES
     __init__.py
     power_analyzer_ff.py
-    power_comparator_ff.py DESTINATION ${GR_PYTHON_DIR}/tfm
+    power_comparator_ff.py
+    logpowerfft_win.py DESTINATION ${GR_PYTHON_DIR}/tfm
 )
 
 ########################################################################

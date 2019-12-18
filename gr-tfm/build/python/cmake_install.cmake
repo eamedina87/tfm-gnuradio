@@ -42,6 +42,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
     "/home/eamedina/Dropbox/UPC/TFM/gnuRadio/gr-tfm/python/__init__.py"
     "/home/eamedina/Dropbox/UPC/TFM/gnuRadio/gr-tfm/python/power_analyzer_ff.py"
     "/home/eamedina/Dropbox/UPC/TFM/gnuRadio/gr-tfm/python/power_comparator_ff.py"
+    "/home/eamedina/Dropbox/UPC/TFM/gnuRadio/gr-tfm/python/logpowerfft_win.py"
     )
 endif()
 
@@ -50,9 +51,11 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
     "/home/eamedina/Dropbox/UPC/TFM/gnuRadio/gr-tfm/build/python/__init__.pyc"
     "/home/eamedina/Dropbox/UPC/TFM/gnuRadio/gr-tfm/build/python/power_analyzer_ff.pyc"
     "/home/eamedina/Dropbox/UPC/TFM/gnuRadio/gr-tfm/build/python/power_comparator_ff.pyc"
+    "/home/eamedina/Dropbox/UPC/TFM/gnuRadio/gr-tfm/build/python/logpowerfft_win.pyc"
     "/home/eamedina/Dropbox/UPC/TFM/gnuRadio/gr-tfm/build/python/__init__.pyo"
     "/home/eamedina/Dropbox/UPC/TFM/gnuRadio/gr-tfm/build/python/power_analyzer_ff.pyo"
     "/home/eamedina/Dropbox/UPC/TFM/gnuRadio/gr-tfm/build/python/power_comparator_ff.pyo"
+    "/home/eamedina/Dropbox/UPC/TFM/gnuRadio/gr-tfm/build/python/logpowerfft_win.pyo"
     )
 endif()
 

@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<block>
+  <name>logpowerfft_hamming</name>
+  <key>tfm_logpowerfft_win</key>
+  <category>[tfm]</category>
+  <import>import tfm</import>
+  <make>tfm.logpowerfft_win(self.samp_rate, self.fft_size, $ref_scale, $frame_rate)</make>
+  
+  <param>
+    <name>Sample Rate</name>
+    <key>sample_rate</key>
+    <value>samp_rate</value>
+    <type>float</type>
+  </param>
+
+  <param>
+    <name>Vector Length</name>
+    <key>vector_length</key>
+    <value>fft_size</value>
+    <type>float</type>
+  </param>
+
+  <param>
+    <name>Reference Scale</name>
+    <key>ref_scale</key>
+    <value>2</value>
+    <type>float</type>
+  </param>
+
+  <param>
+    <name>Frame Rate</name>
+    <key>frame_rate</key>
+    <value>30</value>
+    <type>float</type>
+  </param>
+
+  <sink>
+    <name>in</name>
+    <type>complex</type>
+  </sink>
+
+  <source>
+    <name>out</name>
+    <type>float</type>
+    <vlen>$vector_length</vlen>
+  </source>
+
+</block>

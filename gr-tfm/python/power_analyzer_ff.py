@@ -50,8 +50,8 @@ class power_analyzer_ff(gr.sync_block):
         in0 = input_items[0]
         start_freq = self.center_freq - self.samp_rate / 2
         #print("start_freq %.2f " % start_freq)
-        shifted = numpy.fft.fftshift(in0)
-        for i, value in enumerate(shifted):
+        #shifted = numpy.fft.fftshift(in0)
+        for i, value in enumerate(in0):
             iterator = numpy.nditer(value, flags=['f_index'])
             file_exists = False
             try:

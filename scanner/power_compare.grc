@@ -132,7 +132,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>256</value>
+      <value>2048</value>
     </param>
   </block>
   <block>
@@ -241,73 +241,6 @@
     <param>
       <key>value</key>
       <value>20000000</value>
-    </param>
-  </block>
-  <block>
-    <key>logpwrfft_x</key>
-    <param>
-      <key>avg_alpha</key>
-      <value>1.0</value>
-    </param>
-    <param>
-      <key>average</key>
-      <value>False</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>fft_size</key>
-      <value>fft_size</value>
-    </param>
-    <param>
-      <key>frame_rate</key>
-      <value>30</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(496, 124)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>logpwrfft_x_0</value>
-    </param>
-    <param>
-      <key>type</key>
-      <value>complex</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>ref_scale</key>
-      <value>2</value>
-    </param>
-    <param>
-      <key>sample_rate</key>
-      <value>samp_rate</value>
     </param>
   </block>
   <block>
@@ -1745,7 +1678,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>fftsize</key>
@@ -1840,11 +1773,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(816, 188)</value>
+      <value>(744, 156)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -1860,7 +1793,7 @@
     </param>
     <param>
       <key>id</key>
-      <value>qtgui_vector_sink_f_0</value>
+      <value>qtgui_vector_sink_f_0_0</value>
     </param>
     <param>
       <key>alpha1</key>
@@ -2088,6 +2021,61 @@
     </param>
   </block>
   <block>
+    <key>tfm_logpowerfft_win</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>frame_rate</key>
+      <value>30</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(528, 116)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>tfm_logpowerfft_win_0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>ref_scale</key>
+      <value>2</value>
+    </param>
+    <param>
+      <key>sample_rate</key>
+      <value>samp_rate</value>
+    </param>
+    <param>
+      <key>vector_length</key>
+      <value>fft_size</value>
+    </param>
+  </block>
+  <block>
     <key>tfm_power_comparator_ff</key>
     <param>
       <key>alias</key>
@@ -2107,7 +2095,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>directory</key>
@@ -2119,7 +2107,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(776, 12)</value>
+      <value>(744, 4)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -2147,26 +2135,26 @@
     </param>
   </block>
   <connection>
-    <source_block_id>logpwrfft_x_0</source_block_id>
-    <sink_block_id>qtgui_vector_sink_f_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>logpwrfft_x_0</source_block_id>
-    <sink_block_id>tfm_power_comparator_ff_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>osmosdr_source_0</source_block_id>
-    <sink_block_id>logpwrfft_x_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
     <source_block_id>osmosdr_source_0</source_block_id>
     <sink_block_id>qtgui_sink_x_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>osmosdr_source_0</source_block_id>
+    <sink_block_id>tfm_logpowerfft_win_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>tfm_logpowerfft_win_0</source_block_id>
+    <sink_block_id>qtgui_vector_sink_f_0_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>tfm_logpowerfft_win_0</source_block_id>
+    <sink_block_id>tfm_power_comparator_ff_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
