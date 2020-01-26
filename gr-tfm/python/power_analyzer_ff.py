@@ -42,6 +42,12 @@ class power_analyzer_ff(gr.sync_block):
     def set_center_freq(self, center_frequency):
         self.center_freq = center_frequency
 
+    def set_directory(self, directory):
+        self.directory = directory
+
+    def set_samp_rate(self, samp_rate):
+        self.samp_rate = samp_rate
+
     def work(self, input_items, output_items):
         file_base = "power_%.0fMHz_%.0fMsps_%dFFT" % (self.center_freq // 1e6, self.samp_rate // 1e6, self.vlen)
         filename = "{dir}/{file}.txt".format(dir=self.directory, file=file_base)
@@ -68,6 +74,9 @@ class power_analyzer_ff(gr.sync_block):
                 #print("file index: %d" % file_index)
             temp_file = open(filename_temp, 'w+')
             temp_file.write("%d\n" % (file_index+1))
+            #median = numpy.median(value)
+            #average = numpy.average(value)
+            #print("median:%.2f average:%.2f" % (median, average))
             while not iterator.finished:
                 current_freq = (iterator.index * self.freq_delta) + start_freq
                 cached_power = 1000

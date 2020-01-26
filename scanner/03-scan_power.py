@@ -69,8 +69,8 @@ class top_block(gr.top_block, Qt.QWidget):
         self.freq_min = freq_min = 0e6
         self.freq_max = freq_max = 6000e6
         self.freq = freq = freq_min+(samp_rate/2)
-        self.fft_size = fft_size = 2048
-        self.directory = directory = "/home/eamedina/Documentos/freq_docs/on"
+        self.fft_size = fft_size = 1024
+        self.directory = directory = "/home/eamedina/Documentos/freq_docs/ui"
 
         ##################################################
         # Blocks
