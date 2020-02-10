@@ -40,23 +40,32 @@ class power_comparator_ff(gr.sync_block):
             in_sig=[(numpy.float32,self.vlen)],
             out_sig=None)
 
+    def set_samp_rate(self, samp_rate):
+        self.samp_rate = samp_rate
+
     def set_center_freq(self, center_frequency):
         self.center_freq = center_frequency
 
-    #def set_mode(self, mode):
-    #    self.mode = mode
+    def set_mode(self, mode):
+        self.mode = mode
 
     def set_diff_percentage(self, diff_percentage):
+        print("Set Diff %")
+        print(diff_percentage)
         self.diff_percentage = diff_percentage
 
     def set_diff_db(self, diff_fixed_db):
+        print("Set Diff Db")
+        print(diff_fixed_db)
         self.diff_fixed_db = diff_fixed_db 
+        self.diff_db = diff_fixed_db
 
     def work(self, input_items, output_items):
         in0 = input_items[0]
         file_base_power = "power_%.0fMHz_%.0fMsps_%dFFT" % (self.center_freq // 1e6, self.samp_rate // 1e6, self.vlen)
-        file_base_compare = "compare_%.0fMHz_%.0fMsps_%dFFT_%.0fm_%.0fpc_%.0fdb" % (self.center_freq // 1e6, self.samp_rate // 1e6, 
-            self.vlen, self.mode,self.diff_percentage, self.diff_db)
+        file_base_compare = "compare_%.0fMHz_%.0fMsps_%dFFT_%.0fm_%.0fpc" % (self.center_freq // 1e6, self.samp_rate // 1e6, 
+            self.vlen, self.mode,self.diff_percentage) if self.mode == 1 else "compare_%.0fMHz_%.0fMsps_%dFFT_%.0fm_%.0fdb" % (self.center_freq // 1e6, self.samp_rate // 1e6, 
+            self.vlen, self.mode,self.diff_db)
         filename_power = "{dir}/{file}.txt".format(dir=self.directory, file=file_base_power)
         filename_result = "{dir}/{file}.txt".format(dir=self.directory,file=file_base_compare)
         filename_result_temp = "{dir}/{file}_tmp.txt".format(dir=self.directory,file=file_base_compare)

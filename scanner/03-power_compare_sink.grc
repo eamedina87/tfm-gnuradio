@@ -186,7 +186,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>gui_freq_max</value>
+      <value>440e6</value>
     </param>
   </block>
   <block>
@@ -213,7 +213,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>gui_freq_min</value>
+      <value>420e6</value>
     </param>
   </block>
   <block>
@@ -355,132 +355,6 @@
     </param>
   </block>
   <block>
-    <key>variable_qtgui_range</key>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>value</key>
-      <value>gui_freq_min+samp_rate/1e6</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(736, 396)</value>
-    </param>
-    <param>
-      <key>gui_hint</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>gui_freq_max</value>
-    </param>
-    <param>
-      <key>label</key>
-      <value>Higher Frequency (MHz)</value>
-    </param>
-    <param>
-      <key>min_len</key>
-      <value>200</value>
-    </param>
-    <param>
-      <key>orient</key>
-      <value>Qt.Horizontal</value>
-    </param>
-    <param>
-      <key>start</key>
-      <value>gui_freq_min+samp_rate/1e6</value>
-    </param>
-    <param>
-      <key>step</key>
-      <value>samp_rate/1e6</value>
-    </param>
-    <param>
-      <key>stop</key>
-      <value>6000</value>
-    </param>
-    <param>
-      <key>rangeType</key>
-      <value>float</value>
-    </param>
-    <param>
-      <key>widget</key>
-      <value>counter_slider</value>
-    </param>
-  </block>
-  <block>
-    <key>variable_qtgui_range</key>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>value</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(544, 396)</value>
-    </param>
-    <param>
-      <key>gui_hint</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>gui_freq_min</value>
-    </param>
-    <param>
-      <key>label</key>
-      <value>Lower Frequency (MHz)</value>
-    </param>
-    <param>
-      <key>min_len</key>
-      <value>200</value>
-    </param>
-    <param>
-      <key>orient</key>
-      <value>Qt.Horizontal</value>
-    </param>
-    <param>
-      <key>start</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>step</key>
-      <value>samp_rate/1e6</value>
-    </param>
-    <param>
-      <key>stop</key>
-      <value>6000-samp_rate/1e6</value>
-    </param>
-    <param>
-      <key>rangeType</key>
-      <value>float</value>
-    </param>
-    <param>
-      <key>widget</key>
-      <value>counter_slider</value>
-    </param>
-  </block>
-  <block>
     <key>variable_qtgui_chooser</key>
     <param>
       <key>comment</key>
@@ -496,7 +370,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(240, 380)</value>
+      <value>(216, 380)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -739,53 +613,6 @@
     <param>
       <key>widget</key>
       <value>combo_box</value>
-    </param>
-  </block>
-  <block>
-    <key>variable_qtgui_push_button</key>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>value</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(544, 524)</value>
-    </param>
-    <param>
-      <key>gui_hint</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>gui_update_btn</value>
-    </param>
-    <param>
-      <key>label</key>
-      <value>Update Params</value>
-    </param>
-    <param>
-      <key>pressed</key>
-      <value>1</value>
-    </param>
-    <param>
-      <key>released</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>type</key>
-      <value>int</value>
     </param>
   </block>
   <block>
@@ -2385,7 +2212,7 @@
     </param>
     <param>
       <key>plotconst</key>
-      <value>True</value>
+      <value>False</value>
     </param>
     <param>
       <key>plotfreq</key>
@@ -2393,7 +2220,7 @@
     </param>
     <param>
       <key>plottime</key>
-      <value>True</value>
+      <value>False</value>
     </param>
     <param>
       <key>plotwaterfall</key>
@@ -2417,7 +2244,7 @@
     </param>
     <param>
       <key>wintype</key>
-      <value>firdes.WIN_BLACKMAN_hARRIS</value>
+      <value>firdes.WIN_HAMMING</value>
     </param>
   </block>
   <block>
