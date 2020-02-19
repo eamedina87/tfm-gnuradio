@@ -78,7 +78,6 @@ class power_comparator_ff(gr.sync_block):
         log_file.write("files: " + filename_power+ ";" + filename_result +"\n")
         #shifted = numpy.fft.fftshift(in0)
         for i, value in enumerate(in0):
-            #log_file.write("For index: %d\n" % (i))
             file_power_exists = False
             try:
                 file_power = open(filename_power, 'r')
@@ -115,12 +114,10 @@ class power_comparator_ff(gr.sync_block):
                     try:
                         line = file_power.readline()
                         cached_power = float(line.split("@")[0]) #read database power
-                        #log_file.write("cached_power: " + line+ "\n")
                     except Exception:
                         log_file.write(datetime.now().strftime('%Y%m%d %H:%M:%S:%f')+" ")
                         log_file.write("cached_power exception\n")
                 power = iterator[0]
-                #log_file.write("new power: %.2f\n" % (power))
                 data = "default"
                 exceeded_number = 0
                 exceeded_average = 0
@@ -131,8 +128,6 @@ class power_comparator_ff(gr.sync_block):
                     try:
                         line = file_result.readline()
                         data = line.split("@")[0]
-                        #log_file.write(datetime.now().strftime('%Y%m%d %H:%M:%S:%f')+" ")
-                        #log_file.write("cached_data: " + line+ "\n")
                         values = data.split(";")
                         exceeded_number = float(values[0])
                         exceeded_average = float(values[1])
@@ -147,7 +142,7 @@ class power_comparator_ff(gr.sync_block):
                 else: #fixed db
                     threshold = cached_power+self.diff_db 
                 if power > threshold:
-                    exceeded_diff = power - threshold
+                    exceeded_diff = power - cached_power
                     exceeded_diff_min = numpy.minimum(exceeded_diff_min,exceeded_diff)
                     exceeded_diff_average = ((exceeded_diff_average * exceeded_number) + exceeded_diff) / (exceeded_number+1)
                     exceeded_number = exceeded_number+1    
@@ -155,8 +150,6 @@ class power_comparator_ff(gr.sync_block):
                 exceeded_average = exceeded_number/(file_result_index+1)    
                 temp_file.write("%.0f;%.2f;%.2f;%.2f;%.2f@%.6f" % (exceeded_number, exceeded_average, exceeded_diff_min,
                     exceeded_diff_average, exceeded_diff_max, current_freq/1e6))
-                #log_file.write("new values: %.0f;%.2f;%.2f;%.2f;%.2f@%.6f\n" % (exceeded_number, exceeded_average, exceeded_diff_min,
-                #    exceeded_diff_average, exceeded_diff_max, current_freq/1e6))
                 if (iterator.index != self.vlen-1):
                     temp_file.write("\n")
                 iterator.iternext()
