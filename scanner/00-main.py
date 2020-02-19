@@ -41,6 +41,7 @@ else:
 from matplotlib.figure import Figure
 import sys
 import time
+import functools
 
 class top_block(gr.top_block, Qt.QWidget):
 
@@ -81,6 +82,11 @@ class top_block(gr.top_block, Qt.QWidget):
         self.jammer_button = jammer_button = 0
         self.base_scan_button = base_scan_button = 0
         self.band_scan_button = band_scan_button = 0
+        self.graphic_band_choose = graphic_band_choose = 0
+        self.center_freq = 10e6
+        self.samp_rate = 20e6
+        self.fft_size = 1024
+        self.freq_max = 6000e6
 
         ##################################################
         # Blocks
@@ -119,85 +125,136 @@ class top_block(gr.top_block, Qt.QWidget):
         	lambda: self.set_directory_entry(str(str(self._directory_entry_line_edit.text().toAscii()))))
         self.top_right_layout.addWidget(self._directory_entry_tool_bar)
 
-        dynamic_canvas = FigureCanvas(Figure(figsize=(5, 3)))
-        self.top_right_layout.addWidget(dynamic_canvas)
+        self._graphic_band_choose_options = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, )
+        self._graphic_band_choose_labels = ('ALL', 'CONTINUOUS', '433 MHz', '868 MHz', 'Wifi 2.4GHz (1)',
+            'Wifi 2.4GHz (2)', 'Wifi 2.4GHz (3)', 'Wifi 2.4GHz (4)', 'Wifi 2.4GHz (5)',  'Wifi 2.4GHz (6)*',
+            'Wifi 2.4GHz (7)*', 'Wifi 2.4GHz (8)*', 'Wifi 2.4GHz (9)*', 'Wifi 2.4GHz (10)*', 
+            'GPS L1', 'GPS L2', 'GPS L5')
+        self._graphic_band_choose_tool_bar = Qt.QToolBar(self)
+        self._graphic_band_choose_tool_bar.addWidget(Qt.QLabel("Choose band"+": "))
+        self._graphic_band_choose_combo_box = Qt.QComboBox()
+        self._graphic_band_choose_tool_bar.addWidget(self._graphic_band_choose_combo_box)
+        for label in self._graphic_band_choose_labels: self._graphic_band_choose_combo_box.addItem(label)
+        self._graphic_band_choose_callback = lambda i: Qt.QMetaObject.invokeMethod(self._graphic_band_choose_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._graphic_band_choose_options.index(i)))
+        self._graphic_band_choose_callback(self.graphic_band_choose)
+        self._graphic_band_choose_combo_box.currentIndexChanged.connect(
+            lambda i: self.set_graphic_band_choose(self._graphic_band_choose_options[i]))
 
-        self._dynamic_ax = dynamic_canvas.figure.subplots()
-        self._timer = dynamic_canvas.new_timer(
-            5000, [(self.updateScanData, (), {})])
-        self._timer.start()
+        self.top_right_layout.addWidget(self._graphic_band_choose_tool_bar)
 
+        self.dynamic_canvas = FigureCanvas(Figure(figsize=(5, 3)))
+        self.top_right_layout.addWidget(self.dynamic_canvas)
+
+        self._dynamic_ax = self.dynamic_canvas.figure.subplots()
+        
         self.top_layout.addLayout(self.top_left_layout)
         self.top_layout.addLayout(self.top_right_layout)
 
-        #self.loadBaseData()
-        self.updateScanData()
+        self.updateScanData()    
+        self.startUpdateAllTimer()
 
-    def loadBaseData(self):
-        center_freq = 10e6
-        samp_rate = 20e6
-        fft_size = 1024
-        powers = []
-        freqs = []
-        for center_freq in range(int(samp_rate/2),int(6000e6),int(samp_rate)):
-            file_base_power = "power_%.0fMHz_%.0fMsps_%dFFT" % (center_freq // 1e6, samp_rate // 1e6, fft_size)
-            filename_power = "{dir}/{file}.txt".format(dir=self.directory, file=file_base_power)
-            try:
-                file_power = open(filename_power, 'r')
-                file_power_index = float(file_power.readline()) #read number of values per row of powers
-                for line in file_power.readlines():
-                    powers.append(float(line.split("@")[0]))
-                    freqs.append(float(line.split("@")[1]))
-            except Exception:
-                print("Exception reading file {file}\n".format(file=file_base_power))
-                return 0
-            file_power.close()  
-        self._dynamic_ax.plot(freqs, powers)
-        self._dynamic_ax.figure.canvas.draw()
+    def startUpdateAllTimer(self):
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(5000)
+        timerCallback = functools.partial(self.updateScanData)
+        self.timer.timeout.connect(timerCallback)
+        self.timer.start()
+
+    def cancelUpdateAllTimer(self):
+        try:
+            self.timer.stop()
+        except:
+            print("All timer not initialized yet")
+
+    def startContinuosBandTimer(self):
+        self.band_timer = QtCore.QTimer()
+        self.band_timer.setInterval(5000)
+        timerCallback = functools.partial(self.updateFreqAndScanData)
+        self.band_timer.timeout.connect(timerCallback)
+        self.band_timer.start()
+
+    def cancelContinuousBandTimer(self):
+        try:
+            self.band_timer.stop()        
+        except:
+            print("Continuous timer not initialized yet")
+
+    def startUpdateBandTimer(self):
+        self.band_timer = QtCore.QTimer()
+        self.band_timer.setInterval(5000)
+        timerCallback = functools.partial(self.updateScanDataForFreq)
+        self.band_timer.timeout.connect(timerCallback)
+        self.band_timer.start()
+
+    def cancelUpdateBandTimer(self):
+        try:
+            self.band_timer.stop()        
+        except:
+            print("Band timer not initialized yet")
+
+    def updateFreqAndScanData(self):
+        if (self.center_freq+self.samp_rate >= self.freq_max):
+            self.center_freq = self.samp_rate/2
+        else:
+            self.center_freq += self.samp_rate
+        self.updateScanDataForFreq()
 
     def updateScanData(self):
-        self._dynamic_ax.clear()
-        center_freq = 10e6
-        samp_rate = 20e6
-        fft_size = 1024
+        print("updateScanData")
         powers = []
         freqs = []
         compare_powers = []
         compare_freqs = []
-        for center_freq in range(int(samp_rate/2),int(6000e6),int(samp_rate)):
-            file_base_power = "power_%.0fMHz_%.0fMsps_%dFFT" % (center_freq // 1e6, samp_rate // 1e6, fft_size)
-            filename_power = "{dir}/{file}.txt".format(dir=self.directory, file=file_base_power)
-            file_base_compare = "compare_%.0fMHz_%.0fMsps_%dFFT_1m_1pc_1db" % (center_freq // 1e6, samp_rate // 1e6, fft_size)
-            filename_compare = "{dir}/{file}.txt".format(dir=self.directory, file=file_base_compare)
-            try:
-                file_power = open(filename_power, 'r')
-                file_power_index = float(file_power.readline()) #read number of values per row of powers
-                compare_exists = False
-                try:
-                    file_compare = open(filename_compare, 'r')
-                    file_compare_index = float(file_compare.readline())
-                    compare_exists = True
-                except Exception:
-                    print("No compare file found {file}".format(file=file_base_compare))    
-                for power_line in file_power.readlines():
-                    power = float(power_line.split("@")[0])
-                    powers.append(power)
-                    freqs.append(float(power_line.split("@")[1]))
-                    if compare_exists:
-                        line = file_compare.readline()
-                        values = line.split("@")[0]
-                        max_diff = float(values.split(";")[4])
-                        compare_powers.append(power + max_diff)
-                        compare_freqs.append(float(line.split("@")[1]))
-            except Exception:
-                print("Exception reading file {file} or {file2}\n".format(file=file_base_power, file2=file_base_compare))
-                return 0
-            file_power.close()  
-            file_compare.close()
+        for center_freq in range(int(self.samp_rate/2),int(6000e6),int(self.samp_rate)):
+            self.readFilesForFreq(center_freq, self.samp_rate, self.fft_size, powers, freqs, compare_powers, compare_freqs)
+        self.plotNewValues(freqs, powers, compare_freqs, compare_powers)
+    
+    def updateScanDataForFreq(self):
+        print("updateScanDataForFreq {freq}".format(freq=self.center_freq))
+        powers = []
+        freqs = []
+        compare_powers = []
+        compare_freqs = []
+        self.readFilesForFreq(self.center_freq, self.samp_rate, self.fft_size, powers, freqs, compare_powers, compare_freqs)
+        self.plotNewValues(freqs, powers, compare_freqs, compare_powers)    
+
+    def plotNewValues(self, freqs, powers, compare_freqs, compare_powers):
+        self._dynamic_ax.clear()
         self._dynamic_ax.plot(compare_freqs, compare_powers, color='red')
         self._dynamic_ax.plot(freqs, powers)
         self._dynamic_ax.figure.canvas.draw()        
-    
+
+    def readFilesForFreq(self, center_freq, samp_rate, fft_size, powers, freqs, compare_powers, compare_freqs):
+        file_base_power = "power_%.0fMHz_%.0fMsps_%dFFT" % (center_freq // 1e6, samp_rate // 1e6, fft_size)
+        filename_power = "{dir}/{file}.txt".format(dir=self.directory, file=file_base_power)
+        file_base_compare = "compare_%.0fMHz_%.0fMsps_%dFFT_1m_1pc_1db" % (center_freq // 1e6, samp_rate // 1e6, fft_size)
+        filename_compare = "{dir}/{file}.txt".format(dir=self.directory, file=file_base_compare)
+        try:
+            file_power = open(filename_power, 'r')
+            file_power_index = float(file_power.readline()) #read number of values per row of powers
+            compare_exists = False
+            try:
+                file_compare = open(filename_compare, 'r')
+                file_compare_index = float(file_compare.readline())
+                compare_exists = True
+            except Exception:
+                print("No compare file found {file}".format(file=file_base_compare))    
+            for power_line in file_power.readlines():
+                power = float(power_line.split("@")[0])
+                powers.append(power)
+                freqs.append(float(power_line.split("@")[1]))
+                if compare_exists:
+                    line = file_compare.readline()
+                    values = line.split("@")[0]
+                    max_diff = float(values.split(";")[4])
+                    compare_powers.append(power + max_diff)
+                    compare_freqs.append(float(line.split("@")[1]))
+        except Exception:
+            print("Exception reading file {file} or {file2}\n".format(file=file_base_power, file2=file_base_compare))
+            return 0
+        file_power.close()  
+        file_compare.close()
+
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "top_block")
         self.settings.setValue("geometry", self.saveGeometry())
@@ -234,6 +291,57 @@ class top_block(gr.top_block, Qt.QWidget):
     def set_band_scan_button(self, band_scan_button):
         self.band_scan_button = band_scan_button
 
+    def get_graphic_band_choose(self):
+        return self.graphic_band_choose
+
+    def set_graphic_band_choose(self, graphic_band_choose):
+        self.cancelUpdateAllTimer()
+        self.cancelUpdateBandTimer()
+        self.cancelContinuousBandTimer()
+        self.graphic_band_choose = graphic_band_choose
+        self._graphic_band_choose_callback(self.graphic_band_choose)
+        self.index = graphic_band_choose
+        if (self.index == 0) :#ALL
+            self.updateScanData()
+            self.startUpdateAllTimer()
+            return
+        elif (self.index == 1) :#CONTINUOUS
+            self.center_freq = self.samp_rate / 2
+            self.updateScanDataForFreq()
+            self.startContinuosBandTimer()
+            return
+        elif (self.index == 2) :#433MHz
+            self.center_freq = 430e6 if self.samp_rate == 20e6 else 435e6
+        elif (self.index == 3): #868MHz
+            self.center_freq = 870e6 if self.samp_rate == 20e6 else 865e6
+        elif (self.index == 4): #Wifi 2.4 1
+            self.center_freq = 2410e6 if self.samp_rate == 20e6 else 2405e6
+        elif (self.index == 5): #Wifi 2.4 2
+            self.center_freq = 2430e6 if self.samp_rate == 20e6 else 2415e6
+        elif (self.index == 6): #Wifi 2.4 3
+            self.center_freq = 2450e6 if self.samp_rate == 20e6 else 2425e6
+        elif (self.index == 7): #Wifi 2.4 4
+            self.center_freq = 2470e6 if self.samp_rate == 20e6 else 2435e6
+        elif (self.index == 8): #Wifi 2.4 5
+            self.center_freq = 2490e6 if self.samp_rate == 20e6 else 2445e6
+        elif (self.index == 9): #Wifi 2.4 6
+            self.center_freq = 2490e6 if self.samp_rate == 20e6 else 2455e6
+        elif (self.index == 10): #Wifi 2.4 7
+            self.center_freq = 2490e6 if self.samp_rate == 20e6 else 2465e6
+        elif (self.index == 11): #Wifi 2.4 8
+            self.center_freq = 2490e6 if self.samp_rate == 20e6 else 2475e6
+        elif (self.index == 12): #Wifi 2.4 9
+            self.center_freq = 2490e6 if self.samp_rate == 20e6 else 2485e6
+        elif (self.index == 13): #Wifi 2.4 10
+            self.center_freq = 2490e6 if self.samp_rate == 20e6 else 2495e6
+        elif (self.index == 14): #GPS L1
+            self.center_freq = 1570e6 if self.samp_rate == 20e6 else 1575e6
+        elif (self.index == 15): #GPS L2
+            self.center_freq = 1230e6 if self.samp_rate == 20e6 else 1225e6
+        elif (self.index == 16): #GPS L5
+            self.center_freq = 1170e6 if self.samp_rate == 20e6 else 1175e6
+        self.updateScanDataForFreq()
+        self.startUpdateBandTimer()
 
 def main(top_block_cls=top_block, options=None):
 
