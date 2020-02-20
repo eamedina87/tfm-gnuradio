@@ -83,10 +83,10 @@ class top_block(gr.top_block, Qt.QWidget):
         self.base_scan_button = base_scan_button = 0
         self.band_scan_button = band_scan_button = 0
         self.graphic_band_choose = graphic_band_choose = 0
-        self.center_freq = 10e6
         self.samp_rate = 20e6
         self.fft_size = 1024
         self.freq_max = 6000e6
+        self.center_freq = self.samp_rate/2
 
         ##################################################
         # Blocks
@@ -125,11 +125,10 @@ class top_block(gr.top_block, Qt.QWidget):
         	lambda: self.set_directory_entry(str(str(self._directory_entry_line_edit.text().toAscii()))))
         self.top_right_layout.addWidget(self._directory_entry_tool_bar)
 
-        self._graphic_band_choose_options = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, )
-        self._graphic_band_choose_labels = ('ALL', 'CONTINUOUS', '433 MHz', '868 MHz', 'Wifi 2.4GHz (1)',
+        self._graphic_band_choose_options = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, )
+        self._graphic_band_choose_labels = ('CONTINUOUS', 'ALL', '433 MHz', '868 MHz', 'Wifi 2.4GHz (1)',
             'Wifi 2.4GHz (2)', 'Wifi 2.4GHz (3)', 'Wifi 2.4GHz (4)', 'Wifi 2.4GHz (5)',  'Wifi 2.4GHz (6)*',
-            'Wifi 2.4GHz (7)*', 'Wifi 2.4GHz (8)*', 'Wifi 2.4GHz (9)*', 'Wifi 2.4GHz (10)*', 
-            'GPS L1', 'GPS L2', 'GPS L5')
+            'Wifi 2.4GHz (7)*', 'Wifi 2.4GHz (8)*', 'Wifi 2.4GHz (9)*', 'Wifi 2.4GHz (10)*')
         self._graphic_band_choose_tool_bar = Qt.QToolBar(self)
         self._graphic_band_choose_tool_bar.addWidget(Qt.QLabel("Choose band"+": "))
         self._graphic_band_choose_combo_box = Qt.QComboBox()
@@ -150,8 +149,8 @@ class top_block(gr.top_block, Qt.QWidget):
         self.top_layout.addLayout(self.top_left_layout)
         self.top_layout.addLayout(self.top_right_layout)
 
-        self.updateScanData()    
-        self.startUpdateAllTimer()
+        self.updateScanDataForFreq()
+        self.startContinuosBandTimer()
 
     def startUpdateAllTimer(self):
         self.timer = QtCore.QTimer()
@@ -168,7 +167,7 @@ class top_block(gr.top_block, Qt.QWidget):
 
     def startContinuosBandTimer(self):
         self.band_timer = QtCore.QTimer()
-        self.band_timer.setInterval(5000)
+        self.band_timer.setInterval(2000)
         timerCallback = functools.partial(self.updateFreqAndScanData)
         self.band_timer.timeout.connect(timerCallback)
         self.band_timer.start()
@@ -200,7 +199,6 @@ class top_block(gr.top_block, Qt.QWidget):
         self.updateScanDataForFreq()
 
     def updateScanData(self):
-        print("updateScanData")
         powers = []
         freqs = []
         compare_powers = []
@@ -210,7 +208,6 @@ class top_block(gr.top_block, Qt.QWidget):
         self.plotNewValues(freqs, powers, compare_freqs, compare_powers)
     
     def updateScanDataForFreq(self):
-        print("updateScanDataForFreq {freq}".format(freq=self.center_freq))
         powers = []
         freqs = []
         compare_powers = []
@@ -301,14 +298,14 @@ class top_block(gr.top_block, Qt.QWidget):
         self.graphic_band_choose = graphic_band_choose
         self._graphic_band_choose_callback(self.graphic_band_choose)
         self.index = graphic_band_choose
-        if (self.index == 0) :#ALL
-            self.updateScanData()
-            self.startUpdateAllTimer()
-            return
-        elif (self.index == 1) :#CONTINUOUS
+        if (self.index == 0) :#CONTINUOUS
             self.center_freq = self.samp_rate / 2
             self.updateScanDataForFreq()
             self.startContinuosBandTimer()
+            return
+        elif (self.index == 1) :#ALL
+            self.updateScanData()
+            self.startUpdateAllTimer()
             return
         elif (self.index == 2) :#433MHz
             self.center_freq = 430e6 if self.samp_rate == 20e6 else 435e6
