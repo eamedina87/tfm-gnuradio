@@ -27,6 +27,7 @@ from gnuradio import gr
 from gnuradio.eng_option import eng_option
 from gnuradio.filter import firdes
 from optparse import OptionParser
+from PyQt5.QtCore import pyqtSlot
 import sys
 from gnuradio import qtgui
 import matplotlib.pyplot as plt
@@ -42,6 +43,7 @@ from matplotlib.figure import Figure
 import sys
 import time
 import functools
+from PyQt5.QtWidgets import QTableWidget,QTableWidgetItem
 
 class top_block(gr.top_block, Qt.QWidget):
 
@@ -87,6 +89,8 @@ class top_block(gr.top_block, Qt.QWidget):
         self.fft_size = 1024
         self.freq_max = 6000e6
         self.center_freq = self.samp_rate/2
+        self.table_sort_index = 1
+        self.table_sort_reverse = True
 
         ##################################################
         # Blocks
@@ -146,11 +150,17 @@ class top_block(gr.top_block, Qt.QWidget):
 
         self._dynamic_ax = self.dynamic_canvas.figure.subplots()
         
+        self.tableWidget = QTableWidget()
+        self.tableWidget.horizontalHeader().sectionClicked.connect(self.tableClicked)
+        
+        self.top_right_layout.addWidget(self.tableWidget)
+
         self.top_layout.addLayout(self.top_left_layout)
         self.top_layout.addLayout(self.top_right_layout)
 
         self.updateScanDataForFreq()
         self.startContinuosBandTimer()
+        self.updateTableData()
 
     def startUpdateAllTimer(self):
         self.timer = QtCore.QTimer()
@@ -198,13 +208,24 @@ class top_block(gr.top_block, Qt.QWidget):
             self.center_freq += self.samp_rate
         self.updateScanDataForFreq()
 
+    def updateTableData(self):
+        powers = []
+        freqs = []
+        compare_powers = []
+        compare_freqs = []
+        value_list = []
+        for center_freq in range(int(self.samp_rate/2),int(6000e6),int(self.samp_rate)):
+            self.readFilesForFreq(center_freq, self.samp_rate, self.fft_size, powers, freqs, compare_powers, compare_freqs, value_list)
+        self.addValuesToTable(value_list)
+
     def updateScanData(self):
         powers = []
         freqs = []
         compare_powers = []
         compare_freqs = []
+        value_list = []
         for center_freq in range(int(self.samp_rate/2),int(6000e6),int(self.samp_rate)):
-            self.readFilesForFreq(center_freq, self.samp_rate, self.fft_size, powers, freqs, compare_powers, compare_freqs)
+            self.readFilesForFreq(center_freq, self.samp_rate, self.fft_size, powers, freqs, compare_powers, compare_freqs, value_list)
         self.plotNewValues(freqs, powers, compare_freqs, compare_powers)
     
     def updateScanDataForFreq(self):
@@ -212,8 +233,34 @@ class top_block(gr.top_block, Qt.QWidget):
         freqs = []
         compare_powers = []
         compare_freqs = []
-        self.readFilesForFreq(self.center_freq, self.samp_rate, self.fft_size, powers, freqs, compare_powers, compare_freqs)
+        value_list = []
+        self.readFilesForFreq(self.center_freq, self.samp_rate, self.fft_size, powers, freqs, compare_powers, compare_freqs, value_list)
         self.plotNewValues(freqs, powers, compare_freqs, compare_powers)    
+
+    def addValuesToTable(self, value_list):
+        list = sorted(value_list, key=self.getKey, reverse=self.table_sort_reverse)
+        self.tableWidget.setRowCount(len(value_list))
+        self.tableWidget.setColumnCount(len(value_list[0]))
+        self.tableWidget.setHorizontalHeaderLabels(['Freq. (MHz)', 'Max. Diff', 'Min Diff.', 'Avg. Diff', '% > Thr.'])
+        for index in range(0, len(value_list), 1):
+            current_value = list[index]
+            self.tableWidget.setItem(index,0, QTableWidgetItem(str(current_value[0])))
+            self.tableWidget.setItem(index,1, QTableWidgetItem(str(current_value[1])))
+            self.tableWidget.setItem(index,2, QTableWidgetItem(str(current_value[2])))
+            self.tableWidget.setItem(index,3, QTableWidgetItem(str(current_value[3])))
+            self.tableWidget.setItem(index,4, QTableWidgetItem(str(current_value[4])))
+        self.tableWidget.move(0,0)
+
+    def getKey(self, item):
+        return item[self.table_sort_index]
+
+    def tableClicked(self, item):
+        if item != self.table_sort_index:
+            self.table_sort_index = item
+        else:
+            self.table_sort_reverse = not self.table_sort_reverse
+        self.updateTableData()
+
 
     def plotNewValues(self, freqs, powers, compare_freqs, compare_powers):
         self._dynamic_ax.clear()
@@ -221,7 +268,7 @@ class top_block(gr.top_block, Qt.QWidget):
         self._dynamic_ax.plot(freqs, powers)
         self._dynamic_ax.figure.canvas.draw()        
 
-    def readFilesForFreq(self, center_freq, samp_rate, fft_size, powers, freqs, compare_powers, compare_freqs):
+    def readFilesForFreq(self, center_freq, samp_rate, fft_size, powers, freqs, compare_powers, compare_freqs, list):
         file_base_power = "power_%.0fMHz_%.0fMsps_%dFFT" % (center_freq // 1e6, samp_rate // 1e6, fft_size)
         filename_power = "{dir}/{file}.txt".format(dir=self.directory, file=file_base_power)
         file_base_compare = "compare_%.0fMHz_%.0fMsps_%dFFT_1m_1pc_1db" % (center_freq // 1e6, samp_rate // 1e6, fft_size)
@@ -243,9 +290,17 @@ class top_block(gr.top_block, Qt.QWidget):
                 if compare_exists:
                     line = file_compare.readline()
                     values = line.split("@")[0]
-                    max_diff = float(values.split(";")[4])
-                    compare_powers.append(power + max_diff)
-                    compare_freqs.append(float(line.split("@")[1]))
+                    freq = float(line.split("@")[1])    
+                    values_array = values.split(";")
+                    exceeded_number = float(values_array[0])
+                    exceeded_average = float(values_array[1])
+                    diff_min = float(values_array[2])
+                    diff_average = float(values_array[3])
+                    diff_max = float(values_array[4])
+                    if freq > 1: #HackRF One supports values from 1MHz to 6GHz
+                        list.append((freq, diff_max, diff_min, diff_average, exceeded_average))
+                    compare_powers.append(power + diff_max)
+                    compare_freqs.append(freq)
         except Exception:
             print("Exception reading file {file} or {file2}\n".format(file=file_base_power, file2=file_base_compare))
             return 0
@@ -331,12 +386,6 @@ class top_block(gr.top_block, Qt.QWidget):
             self.center_freq = 2490e6 if self.samp_rate == 20e6 else 2485e6
         elif (self.index == 13): #Wifi 2.4 10
             self.center_freq = 2490e6 if self.samp_rate == 20e6 else 2495e6
-        elif (self.index == 14): #GPS L1
-            self.center_freq = 1570e6 if self.samp_rate == 20e6 else 1575e6
-        elif (self.index == 15): #GPS L2
-            self.center_freq = 1230e6 if self.samp_rate == 20e6 else 1225e6
-        elif (self.index == 16): #GPS L5
-            self.center_freq = 1170e6 if self.samp_rate == 20e6 else 1175e6
         self.updateScanDataForFreq()
         self.startUpdateBandTimer()
 
