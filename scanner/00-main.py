@@ -44,6 +44,7 @@ import sys
 import time
 import functools
 from PyQt5.QtWidgets import QTableWidget,QTableWidgetItem
+from gnuradio.qtgui import Range, RangeWidget
 
 class top_block(gr.top_block, Qt.QWidget):
 
@@ -65,9 +66,12 @@ class top_block(gr.top_block, Qt.QWidget):
         self.top_widget = Qt.QWidget()
         self.top_scroll.setWidget(self.top_widget)
         self.top_layout = Qt.QHBoxLayout(self.top_widget)
+
+        self.data_params_layout = Qt.QHBoxLayout()
         
         self.top_left_layout = Qt.QVBoxLayout()
         self.top_right_layout = Qt.QVBoxLayout()
+
 
         self.settings = Qt.QSettings("GNU Radio", "top_block")
 
@@ -91,11 +95,20 @@ class top_block(gr.top_block, Qt.QWidget):
         self.center_freq = self.samp_rate/2
         self.table_sort_index = 1
         self.table_sort_reverse = True
+        self.bandwidth_range = bandwidth_range = 20
+        self.samp_rate_chooser = samp_rate_chooser = 20
+        self.center_freq_range = center_freq_range = 3000
+        self.fft_size_chooser = fft_size_chooser = 1024
+        self.update_graph_button = update_graph_button = 0
+        self.update_params_button = update_params_button = 0
+        self.loop_min_freq = self.samp_rate/2
+        self.loop_max_freq = self.freq_max
 
         ##################################################
         # Blocks
         ##################################################
 
+        #SCRIPT BUTTONS
         _spectrum_scan_button_push_button = Qt.QPushButton('Spectrum Scan')
         self._spectrum_scan_button_choices = {'Pressed': 1, 'Released': 0}
         _spectrum_scan_button_push_button.pressed.connect(lambda: self.set_spectrum_scan_button(self._spectrum_scan_button_choices['Pressed']))
@@ -115,20 +128,15 @@ class top_block(gr.top_block, Qt.QWidget):
         self._band_scan_button_choices = {'Pressed': 1, 'Released': 0}
         _band_scan_button_push_button.pressed.connect(lambda: self.set_band_scan_button(self._band_scan_button_choices['Pressed']))
         _band_scan_button_push_button.released.connect(lambda: self.set_band_scan_button(self._band_scan_button_choices['Released']))
-        
-        self.top_left_layout.addWidget(_base_scan_button_push_button)
-        self.top_left_layout.addWidget(_spectrum_scan_button_push_button)
-        self.top_left_layout.addWidget(_band_scan_button_push_button)
-        self.top_left_layout.addWidget(_jammer_button_push_button)
 
+        #GRAPH PARAMS
         self._directory_entry_tool_bar = Qt.QToolBar(self)
         self._directory_entry_tool_bar.addWidget(Qt.QLabel('Directory'+": "))
         self._directory_entry_line_edit = Qt.QLineEdit(str(self.directory))
         self._directory_entry_tool_bar.addWidget(self._directory_entry_line_edit)
         self._directory_entry_line_edit.returnPressed.connect(
         	lambda: self.set_directory_entry(str(str(self._directory_entry_line_edit.text().toAscii()))))
-        self.top_right_layout.addWidget(self._directory_entry_tool_bar)
-
+        
         self._graphic_band_choose_options = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, )
         self._graphic_band_choose_labels = ('CONTINUOUS', 'ALL', '433 MHz', '868 MHz', 'Wifi 2.4GHz (1)',
             'Wifi 2.4GHz (2)', 'Wifi 2.4GHz (3)', 'Wifi 2.4GHz (4)', 'Wifi 2.4GHz (5)',  'Wifi 2.4GHz (6)*',
@@ -143,16 +151,83 @@ class top_block(gr.top_block, Qt.QWidget):
         self._graphic_band_choose_combo_box.currentIndexChanged.connect(
             lambda i: self.set_graphic_band_choose(self._graphic_band_choose_options[i]))
 
-        self.top_right_layout.addWidget(self._graphic_band_choose_tool_bar)
-
-        self.dynamic_canvas = FigureCanvas(Figure(figsize=(5, 3)))
-        self.top_right_layout.addWidget(self.dynamic_canvas)
-
-        self._dynamic_ax = self.dynamic_canvas.figure.subplots()
+        self._samp_rate_chooser_options = (10, 20, )
+        self._samp_rate_chooser_labels = ('10 Msps', '20 Msps', )
+        self._samp_rate_chooser_tool_bar = Qt.QToolBar(self)
+        self._samp_rate_chooser_tool_bar.addWidget(Qt.QLabel('Sample Rate'+": "))
+        self._samp_rate_chooser_combo_box = Qt.QComboBox()
+        self._samp_rate_chooser_tool_bar.addWidget(self._samp_rate_chooser_combo_box)
+        for label in self._samp_rate_chooser_labels: self._samp_rate_chooser_combo_box.addItem(label)
+        self._samp_rate_chooser_callback = lambda i: Qt.QMetaObject.invokeMethod(self._samp_rate_chooser_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._samp_rate_chooser_options.index(i)))
+        self._samp_rate_chooser_callback(self.samp_rate_chooser)
+        self._samp_rate_chooser_combo_box.currentIndexChanged.connect(
+            lambda i: self.set_samp_rate_chooser(self._samp_rate_chooser_options[i]))
         
+        self._fft_size_chooser_options = (1024, 2048, )
+        self._fft_size_chooser_labels = (str(self._fft_size_chooser_options[0]), str(self._fft_size_chooser_options[1]), )
+        self._fft_size_chooser_tool_bar = Qt.QToolBar(self)
+        self._fft_size_chooser_tool_bar.addWidget(Qt.QLabel('FFT Size'+": "))
+        self._fft_size_chooser_combo_box = Qt.QComboBox()
+        self._fft_size_chooser_tool_bar.addWidget(self._fft_size_chooser_combo_box)
+        for label in self._fft_size_chooser_labels: self._fft_size_chooser_combo_box.addItem(label)
+        self._fft_size_chooser_callback = lambda i: Qt.QMetaObject.invokeMethod(self._fft_size_chooser_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._fft_size_chooser_options.index(i)))
+        self._fft_size_chooser_callback(self.fft_size_chooser)
+        self._fft_size_chooser_combo_box.currentIndexChanged.connect(
+            lambda i: self.set_fft_size_chooser(self._fft_size_chooser_options[i]))
+        
+        _update_params_button_push_button = Qt.QPushButton('Update Params.')
+        self._update_params_button_choices = {'Pressed': 1, 'Released': 0}
+        _update_params_button_push_button.pressed.connect(lambda: self.set_update_params_button(self._update_params_button_choices['Pressed']))
+        _update_params_button_push_button.released.connect(lambda: self.set_update_params_button(self._update_params_button_choices['Released']))
+
+        #FREQUENCY/RANGE CONTROLS
+        self._center_freq_range_range = Range(5, 6000, 5, 3000, 200)
+        self._center_freq_range_win = RangeWidget(self._center_freq_range_range, self.set_center_freq_range, 'Freq. (MHz)', "counter_slider", float)
+        
+        self._bandwidth_range_range = Range(10, 6000, 10, 20, 200)
+        self._bandwidth_range_win = RangeWidget(self._bandwidth_range_range, self.set_bandwidth_range, 'Bandwidth (MHz)', "counter_slider", float)
+        self._bandwidth_range_range2 = Range(100, 3000, 10, 2000, 200)
+
+        _update_graph_button_push_button = Qt.QPushButton('Update Graph')
+        self._update_graph_button_choices = {'Pressed': 1, 'Released': 0}
+        _update_graph_button_push_button.pressed.connect(lambda: self.set_update_graph_button(self._update_graph_button_choices['Pressed']))
+        _update_graph_button_push_button.released.connect(lambda: self.set_update_graph_button(self._update_graph_button_choices['Released']))
+
+        #GRAPHIC/PLOT
+        self.dynamic_canvas = FigureCanvas(Figure(figsize=(5, 3)))
+        self._dynamic_ax = self.dynamic_canvas.figure.subplots()
+
+        #TABLE
         self.tableWidget = QTableWidget()
         self.tableWidget.horizontalHeader().sectionClicked.connect(self.tableClicked)
-        
+
+        #LEFT LAYOUT
+        self.top_left_layout.addWidget(_base_scan_button_push_button)
+        self.top_left_layout.addWidget(_spectrum_scan_button_push_button)
+        self.top_left_layout.addWidget(_band_scan_button_push_button)
+        self.top_left_layout.addWidget(_jammer_button_push_button)
+
+        #DATA PARAMS LAYOUT
+        self.data_params_layout.addWidget(self._samp_rate_chooser_tool_bar)
+        self.data_params_layout.addWidget(self._fft_size_chooser_tool_bar)
+        self.data_params_layout.addWidget(_update_params_button_push_button)
+
+        #FREQUENCY PARAMS LAYOUT
+        self.freq_container = Qt.QWidget()
+        self.freq_params_v_layout = Qt.QVBoxLayout(self.freq_container)
+        self.freq_params_h_layout = Qt.QHBoxLayout()
+        self.freq_params_h_layout.addWidget(self._bandwidth_range_win)
+        self.freq_params_h_layout.addWidget(_update_graph_button_push_button)
+        self.freq_params_v_layout.addWidget(self._center_freq_range_win)
+        self.freq_params_v_layout.addLayout(self.freq_params_h_layout)
+        self.freq_container.setVisible(False)
+
+        #RIGHT LAYOUT
+        self.top_right_layout.addWidget(self._directory_entry_tool_bar)
+        self.top_right_layout.addLayout(self.data_params_layout)
+        self.top_right_layout.addWidget(self._graphic_band_choose_tool_bar)
+        self.top_right_layout.addWidget(self.freq_container)
+        self.top_right_layout.addWidget(self.dynamic_canvas)
         self.top_right_layout.addWidget(self.tableWidget)
 
         self.top_layout.addLayout(self.top_left_layout)
@@ -214,7 +289,7 @@ class top_block(gr.top_block, Qt.QWidget):
         compare_powers = []
         compare_freqs = []
         value_list = []
-        for center_freq in range(int(self.samp_rate/2),int(6000e6),int(self.samp_rate)):
+        for center_freq in range(int(self.samp_rate/2),int(self.freq_max),int(self.samp_rate)):
             self.readFilesForFreq(center_freq, self.samp_rate, self.fft_size, powers, freqs, compare_powers, compare_freqs, value_list)
         self.addValuesToTable(value_list)
 
@@ -224,7 +299,7 @@ class top_block(gr.top_block, Qt.QWidget):
         compare_powers = []
         compare_freqs = []
         value_list = []
-        for center_freq in range(int(self.samp_rate/2),int(6000e6),int(self.samp_rate)):
+        for center_freq in range(int(self.loop_min_freq),int(self.loop_max_freq),int(self.samp_rate)):
             self.readFilesForFreq(center_freq, self.samp_rate, self.fft_size, powers, freqs, compare_powers, compare_freqs, value_list)
         self.plotNewValues(freqs, powers, compare_freqs, compare_powers)
     
@@ -241,15 +316,19 @@ class top_block(gr.top_block, Qt.QWidget):
         list = sorted(value_list, key=self.getKey, reverse=self.table_sort_reverse)
         self.tableWidget.setRowCount(len(value_list))
         self.tableWidget.setColumnCount(len(value_list[0]))
-        self.tableWidget.setHorizontalHeaderLabels(['Freq. (MHz)', 'Max. Diff', 'Min Diff.', 'Avg. Diff', '% > Thr.'])
+        self.tableWidget.setHorizontalHeaderLabels(['Freq. (MHz)', 'Max. Diff.(db)', 'Min Diff.(db)', 'Avg. Diff.(db)', '% > Thr.'])
         for index in range(0, len(value_list), 1):
             current_value = list[index]
             self.tableWidget.setItem(index,0, QTableWidgetItem(str(current_value[0])))
             self.tableWidget.setItem(index,1, QTableWidgetItem(str(current_value[1])))
             self.tableWidget.setItem(index,2, QTableWidgetItem(str(current_value[2])))
             self.tableWidget.setItem(index,3, QTableWidgetItem(str(current_value[3])))
-            self.tableWidget.setItem(index,4, QTableWidgetItem(str(current_value[4])))
-        self.tableWidget.move(0,0)
+            self.tableWidget.setItem(index,4, QTableWidgetItem(str(current_value[4]*100)))
+
+    def check_graph_params(self):
+        self.loop_min_freq = (self.center_freq_range - self.bandwidth_range/2) * 1e6
+        self.loop_max_freq = (self.center_freq_range + self.bandwidth_range/2) * 1e6
+        self.updateScanData()
 
     def getKey(self, item):
         return item[self.table_sort_index]
@@ -261,12 +340,12 @@ class top_block(gr.top_block, Qt.QWidget):
             self.table_sort_reverse = not self.table_sort_reverse
         self.updateTableData()
 
-
     def plotNewValues(self, freqs, powers, compare_freqs, compare_powers):
-        self._dynamic_ax.clear()
-        self._dynamic_ax.plot(compare_freqs, compare_powers, color='red')
-        self._dynamic_ax.plot(freqs, powers)
-        self._dynamic_ax.figure.canvas.draw()        
+        if (len(powers) > 0):
+            self._dynamic_ax.clear()
+            self._dynamic_ax.plot(compare_freqs, compare_powers, color='red')
+            self._dynamic_ax.plot(freqs, powers)
+            self._dynamic_ax.figure.canvas.draw()        
 
     def readFilesForFreq(self, center_freq, samp_rate, fft_size, powers, freqs, compare_powers, compare_freqs, list):
         file_base_power = "power_%.0fMHz_%.0fMsps_%dFFT" % (center_freq // 1e6, samp_rate // 1e6, fft_size)
@@ -347,12 +426,69 @@ class top_block(gr.top_block, Qt.QWidget):
         return self.graphic_band_choose
 
     def set_graphic_band_choose(self, graphic_band_choose):
+        self.graphic_band_choose = graphic_band_choose
+        self._graphic_band_choose_callback(self.graphic_band_choose)
+
+    def get_update_graph_button(self):
+        return self.update_graph_button
+
+    def set_update_graph_button(self, update_graph_button):
+        self.update_graph_button = update_graph_button
+
+    def get_samp_rate_chooser(self):
+        return self.samp_rate_chooser
+
+    def set_samp_rate_chooser(self, samp_rate_chooser):
+        self.samp_rate_chooser = samp_rate_chooser
+        self._samp_rate_chooser_callback(self.samp_rate_chooser)
+        self.samp_rate = samp_rate_chooser
+
+    def get_fft_size_chooser(self):
+        return self.fft_size_chooser
+
+    def set_fft_size_chooser(self, fft_size_chooser):
+        self.fft_size_chooser = fft_size_chooser
+        self._fft_size_chooser_callback(self.fft_size_chooser)
+        self.fft_size = fft_size_chooser
+        print(fft_size_chooser)
+
+    def get_center_freq_range(self):
+        return self.center_freq_range
+
+    def set_center_freq_range(self, center_freq_range):
+        self.center_freq_range = center_freq_range
+
+    def get_bandwidth_range(self):
+        return self.bandwidth_range
+
+    def set_bandwidth_range(self, bandwidth_range):
+        self.bandwidth_range = bandwidth_range
+
+    def get_update_graph_button(self):
+        return self.update_graph_button
+
+    def set_update_graph_button(self, update_graph_button):
+        self.update_graph_button = update_graph_button
+        if update_graph_button == 1:
+            self.check_graph_params()
+
+    def get_update_params_button(self):
+        return self.update_params_button
+
+    def set_update_params_button(self, update_params_button):
+        self.update_params_button = update_params_button
+
+    def get_graphic_band_choose(self):
+        return self.graphic_band_choose
+
+    def set_graphic_band_choose(self, graphic_band_choose):
         self.cancelUpdateAllTimer()
         self.cancelUpdateBandTimer()
         self.cancelContinuousBandTimer()
         self.graphic_band_choose = graphic_band_choose
         self._graphic_band_choose_callback(self.graphic_band_choose)
         self.index = graphic_band_choose
+        self.freq_container.setVisible(False)
         if (self.index == 0) :#CONTINUOUS
             self.center_freq = self.samp_rate / 2
             self.updateScanDataForFreq()
@@ -361,6 +497,7 @@ class top_block(gr.top_block, Qt.QWidget):
         elif (self.index == 1) :#ALL
             self.updateScanData()
             self.startUpdateAllTimer()
+            self.freq_container.setVisible(True)
             return
         elif (self.index == 2) :#433MHz
             self.center_freq = 430e6 if self.samp_rate == 20e6 else 435e6
