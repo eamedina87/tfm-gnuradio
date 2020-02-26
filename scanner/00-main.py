@@ -43,7 +43,7 @@ from matplotlib.figure import Figure
 import sys
 import time
 import functools
-from PyQt5.QtWidgets import QTableWidget,QTableWidgetItem
+from PyQt5.QtWidgets import QTableWidget,QTableWidgetItem, QFileDialog
 from gnuradio.qtgui import Range, RangeWidget
 import subprocess
 
@@ -69,10 +69,10 @@ class top_block(gr.top_block, Qt.QWidget):
         self.top_layout = Qt.QHBoxLayout(self.top_widget)
 
         self.data_params_layout = Qt.QHBoxLayout()
+        self.directory_params_layout = Qt.QHBoxLayout()
         
         self.top_left_layout = Qt.QVBoxLayout()
         self.top_right_layout = Qt.QVBoxLayout()
-
 
         self.settings = Qt.QSettings("GNU Radio", "top_block")
 
@@ -102,6 +102,7 @@ class top_block(gr.top_block, Qt.QWidget):
         self.fft_size_chooser = fft_size_chooser = 1024
         self.update_graph_button = update_graph_button = 0
         self.update_params_button = update_params_button = 0
+        self.update_diretory_button = update_directory_button = 0
         self.loop_min_freq = self.samp_rate/2
         self.loop_max_freq = self.freq_max
 
@@ -134,10 +135,16 @@ class top_block(gr.top_block, Qt.QWidget):
         self._directory_entry_tool_bar = Qt.QToolBar(self)
         self._directory_entry_tool_bar.addWidget(Qt.QLabel('Directory'+": "))
         self._directory_entry_line_edit = Qt.QLineEdit(str(self.directory))
+        self._directory_entry_line_edit.setReadOnly(True)
         self._directory_entry_tool_bar.addWidget(self._directory_entry_line_edit)
         self._directory_entry_line_edit.returnPressed.connect(
         	lambda: self.set_directory_entry(str(str(self._directory_entry_line_edit.text().toAscii()))))
         
+        _update_directory_button_push_button = Qt.QPushButton('Select Directory')
+        self._update_directory_button_choices = {'Pressed': 1, 'Released': 0}
+        _update_directory_button_push_button.pressed.connect(lambda: self.set_update_directory_button(self._update_directory_button_choices['Pressed']))
+        _update_directory_button_push_button.released.connect(lambda: self.set_update_directory_button(self._update_directory_button_choices['Released']))
+
         self._graphic_band_choose_options = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, )
         self._graphic_band_choose_labels = ('CONTINUOUS', 'ALL', '433 MHz', '868 MHz', 'Wifi 2.4GHz (1)',
             'Wifi 2.4GHz (2)', 'Wifi 2.4GHz (3)', 'Wifi 2.4GHz (4)', 'Wifi 2.4GHz (5)',  'Wifi 2.4GHz (6)*',
@@ -187,7 +194,6 @@ class top_block(gr.top_block, Qt.QWidget):
         
         self._bandwidth_range_range = Range(10, 6000, 10, 20, 200)
         self._bandwidth_range_win = RangeWidget(self._bandwidth_range_range, self.set_bandwidth_range, 'Bandwidth (MHz)', "counter_slider", float)
-        self._bandwidth_range_range2 = Range(100, 3000, 10, 2000, 200)
 
         _update_graph_button_push_button = Qt.QPushButton('Update Graph')
         self._update_graph_button_choices = {'Pressed': 1, 'Released': 0}
@@ -208,6 +214,10 @@ class top_block(gr.top_block, Qt.QWidget):
         self.top_left_layout.addWidget(_band_scan_button_push_button)
         self.top_left_layout.addWidget(_jammer_button_push_button)
 
+        #DIRECTORY LAYOUT
+        self.directory_params_layout.addWidget(self._directory_entry_tool_bar)
+        self.directory_params_layout.addWidget(_update_directory_button_push_button)
+
         #DATA PARAMS LAYOUT
         self.data_params_layout.addWidget(self._samp_rate_chooser_tool_bar)
         self.data_params_layout.addWidget(self._fft_size_chooser_tool_bar)
@@ -224,7 +234,7 @@ class top_block(gr.top_block, Qt.QWidget):
         self.freq_container.setVisible(False)
 
         #RIGHT LAYOUT
-        self.top_right_layout.addWidget(self._directory_entry_tool_bar)
+        self.top_right_layout.addLayout(self.directory_params_layout)
         self.top_right_layout.addLayout(self.data_params_layout)
         self.top_right_layout.addWidget(self._graphic_band_choose_tool_bar)
         self.top_right_layout.addWidget(self.freq_container)
@@ -238,6 +248,13 @@ class top_block(gr.top_block, Qt.QWidget):
         self.startContinuosBandTimer()
         self.updateTableData()
 
+    def chooseDirectory(self):
+        file = str(QFileDialog.getExistingDirectory(self, "Select Directory", self.directory))
+        if len(file) > 0:
+            self.clearGraph()
+            self.clearTable()
+            self.set_directory_entry(file)
+            
     def startUpdateAllTimer(self):
         self.timer = QtCore.QTimer()
         self.timer.setInterval(5000)
@@ -314,17 +331,24 @@ class top_block(gr.top_block, Qt.QWidget):
         self.plotNewValues(freqs, powers, compare_freqs, compare_powers)    
 
     def addValuesToTable(self, value_list):
-        list = sorted(value_list, key=self.getKey, reverse=self.table_sort_reverse)
+        _list = sorted(value_list, key=self.getKey, reverse=self.table_sort_reverse)
         self.tableWidget.setRowCount(len(value_list))
         self.tableWidget.setColumnCount(len(value_list[0]))
         self.tableWidget.setHorizontalHeaderLabels(['Freq. (MHz)', 'Max. Diff.(db)', 'Min Diff.(db)', 'Avg. Diff.(db)', '% > Thr.'])
         for index in range(0, len(value_list), 1):
-            current_value = list[index]
+            current_value = _list[index]
             self.tableWidget.setItem(index,0, QTableWidgetItem(str(current_value[0])))
             self.tableWidget.setItem(index,1, QTableWidgetItem(str(current_value[1])))
             self.tableWidget.setItem(index,2, QTableWidgetItem(str(current_value[2])))
             self.tableWidget.setItem(index,3, QTableWidgetItem(str(current_value[3])))
             self.tableWidget.setItem(index,4, QTableWidgetItem(str(current_value[4]*100)))
+
+    def clearTable(self):
+        self.tableWidget.clear()
+
+    def clearGraph(self):
+        self._dynamic_ax.clear()
+        self._dynamic_ax.figure.canvas.draw()        
 
     def check_graph_params(self):
         self.loop_min_freq = (self.center_freq_range - self.bandwidth_range/2) * 1e6
@@ -343,20 +367,20 @@ class top_block(gr.top_block, Qt.QWidget):
 
     def plotNewValues(self, freqs, powers, compare_freqs, compare_powers):
         if (len(powers) > 0):
-            self._dynamic_ax.clear()
+            self.clearGraph()
             self._dynamic_ax.plot(compare_freqs, compare_powers, color='red')
             self._dynamic_ax.plot(freqs, powers)
             self._dynamic_ax.figure.canvas.draw()        
 
-    def readFilesForFreq(self, center_freq, samp_rate, fft_size, powers, freqs, compare_powers, compare_freqs, list):
+    def readFilesForFreq(self, center_freq, samp_rate, fft_size, powers, freqs, compare_powers, compare_freqs, _list):
         file_base_power = "power_%.0fMHz_%.0fMsps_%dFFT" % (center_freq // 1e6, samp_rate // 1e6, fft_size)
         filename_power = "{dir}/{file}.txt".format(dir=self.directory, file=file_base_power)
         file_base_compare = "compare_%.0fMHz_%.0fMsps_%dFFT_1m_1pc_1db" % (center_freq // 1e6, samp_rate // 1e6, fft_size)
         filename_compare = "{dir}/{file}.txt".format(dir=self.directory, file=file_base_compare)
+        compare_exists = False
         try:
             file_power = open(filename_power, 'r')
             file_power_index = float(file_power.readline()) #read number of values per row of powers
-            compare_exists = False
             try:
                 file_compare = open(filename_compare, 'r')
                 file_compare_index = float(file_compare.readline())
@@ -378,14 +402,15 @@ class top_block(gr.top_block, Qt.QWidget):
                     diff_average = float(values_array[3])
                     diff_max = float(values_array[4])
                     if freq > 1: #HackRF One supports values from 1MHz to 6GHz
-                        list.append((freq, diff_max, diff_min, diff_average, exceeded_average))
+                        _list.append((freq, diff_max, diff_min, diff_average, exceeded_average))
                     compare_powers.append(power + diff_max)
                     compare_freqs.append(freq)
         except Exception:
             print("Exception reading file {file} or {file2}\n".format(file=file_base_power, file2=file_base_compare))
             return 0
         file_power.close()  
-        file_compare.close()
+        if compare_exists:
+            file_compare.close()
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "top_block")
@@ -437,6 +462,14 @@ class top_block(gr.top_block, Qt.QWidget):
     def set_graphic_band_choose(self, graphic_band_choose):
         self.graphic_band_choose = graphic_band_choose
         self._graphic_band_choose_callback(self.graphic_band_choose)
+
+    def get_update_directory_button(self):
+        return self.update_directory_button
+
+    def set_update_directory_button(self, update_directory_button):
+        self.update_directory_button = update_directory_button
+        if update_directory_button == 1:
+            self.chooseDirectory()
 
     def get_update_graph_button(self):
         return self.update_graph_button
