@@ -45,6 +45,7 @@ import time
 import functools
 from PyQt5.QtWidgets import QTableWidget,QTableWidgetItem
 from gnuradio.qtgui import Range, RangeWidget
+import subprocess
 
 class top_block(gr.top_block, Qt.QWidget):
 
@@ -398,29 +399,37 @@ class top_block(gr.top_block, Qt.QWidget):
         self.directory = directory_entry
         Qt.QMetaObject.invokeMethod(self._directory_entry_line_edit, "setText", Qt.Q_ARG("QString", str(self.directory)))
 
-    def get_spectrum_scan_button(self):
-        return self.spectrum_scan_button
-
-    def set_spectrum_scan_button(self, spectrum_scan_button):
-        self.spectrum_scan_button = spectrum_scan_button
-
-    def get_jammer_button(self):
-        return self.jammer_button
-
-    def set_jammer_button(self, jammer_button):
-        self.jammer_button = jammer_button
-
     def get_base_scan_button(self):
         return self.base_scan_button
 
     def set_base_scan_button(self, base_scan_button):
         self.base_scan_button = base_scan_button
+        if (base_scan_button == 1):
+            subprocess.call("./01-scan_base.py",shell=True)
+
+    def get_spectrum_scan_button(self):
+        return self.spectrum_scan_button
+
+    def set_spectrum_scan_button(self, spectrum_scan_button):
+        self.spectrum_scan_button = spectrum_scan_button
+        if (spectrum_scan_button == 1):
+            subprocess.call("./02-scan_spectrum.py")
 
     def get_band_scan_button(self):
         return self.band_scan_button
 
     def set_band_scan_button(self, band_scan_button):
         self.band_scan_button = band_scan_button
+        if (band_scan_button == 1):
+            subprocess.call("./03-scan_band.py")
+
+    def get_jammer_button(self):
+        return self.jammer_button
+
+    def set_jammer_button(self, jammer_button):
+        self.jammer_button = jammer_button
+        if (jammer_button == 1):
+            subprocess.call("./04-jammer.py")
 
     def get_graphic_band_choose(self):
         return self.graphic_band_choose
