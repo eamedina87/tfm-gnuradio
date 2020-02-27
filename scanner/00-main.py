@@ -430,7 +430,7 @@ class top_block(gr.top_block, Qt.QWidget):
     def set_base_scan_button(self, base_scan_button):
         self.base_scan_button = base_scan_button
         if (base_scan_button == 1):
-            subprocess.call("./01-scan_base.py",shell=True)
+            subprocess.call("./01-scan_base.py {arg1} {arg2} {arg3}".format(arg1=self.directory, arg2=int(self.samp_rate//1e6), arg3=self.fft_size),shell=True)
 
     def get_spectrum_scan_button(self):
         return self.spectrum_scan_button

@@ -1,23 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # 
-# Copyright 2019 ERICK ADOLFO MEDINA MORENO.
-# 
-# This is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3, or (at your option)
-# any later version.
-# 
-# This software is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with this software; see the file COPYING.  If not, write to
-# the Free Software Foundation, Inc., 51 Franklin Street,
-# Boston, MA 02110-1301, USA.
-# 
+
+##################################################
+# GNU Radio Python Flow Graph
+# Title: Drone Detection
+# Author: Erick Medina Moreno
+# Description: Script that scans from 1MHz-6GHz and creates files with averages for all the frequencies
+# Generated: Wed Feb 12 12:57:33 2020
+##################################################
 
 import numpy
 import os
@@ -48,15 +39,15 @@ class power_analyzer_ff(gr.sync_block):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
 
+    def set_fft_size(self, fft_size):
+        self.vlen = fft_size        
+
     def work(self, input_items, output_items):
         file_base = "power_%.0fMHz_%.0fMsps_%dFFT" % (self.center_freq // 1e6, self.samp_rate // 1e6, self.vlen)
         filename = "{dir}/{file}.txt".format(dir=self.directory, file=file_base)
         filename_temp = "{dir}/{file}_tmp.txt".format(dir=self.directory,file=file_base)
-        #print(filename)
         in0 = input_items[0]
         start_freq = self.center_freq - self.samp_rate / 2
-        #print("start_freq %.2f " % start_freq)
-        #shifted = numpy.fft.fftshift(in0)
         for i, value in enumerate(in0):
             iterator = numpy.nditer(value, flags=['f_index'])
             file_exists = False
@@ -71,12 +62,8 @@ class power_analyzer_ff(gr.sync_block):
                     file_index = int(file.readline()) #read number of values per row
                 except Exception:
                     file_index = 0
-                #print("file index: %d" % file_index)
             temp_file = open(filename_temp, 'w+')
             temp_file.write("%d\n" % (file_index+1))
-            #median = numpy.median(value)
-            #average = numpy.average(value)
-            #print("median:%.2f average:%.2f" % (median, average))
             while not iterator.finished:
                 current_freq = (iterator.index * self.freq_delta) + start_freq
                 cached_power = 1000
@@ -87,10 +74,7 @@ class power_analyzer_ff(gr.sync_block):
                         cached_power = 1000
                 power = iterator[0]
                 if cached_power != 1000:
-                    #print("cached power %.2f@%.6f" % (cached_power, current_freq))
-                    #print("current power %.2f" % (power))
                     power = ((cached_power * file_index) + power) / (file_index+1)
-                #print("new power %.2f %d %.5f" % (power, iterator.index, current_freq))
                 temp_file.write("%.2f@%.6f" % (power, current_freq/1e6))
                 if (iterator.index != self.vlen-1):
                     temp_file.write("\n")

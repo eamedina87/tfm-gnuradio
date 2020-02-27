@@ -36,7 +36,7 @@ from gnuradio import qtgui
 
 class top_block(gr.top_block, Qt.QWidget):
 
-    def __init__(self):
+    def __init__(self):    
         gr.top_block.__init__(self, "Top Block")
         Qt.QWidget.__init__(self)
         self.setWindowTitle("Top Block")
@@ -67,12 +67,17 @@ class top_block(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.gui_samp_rate = gui_samp_rate = 20
+
+        arguments = sys.argv[1:]
+        hasArguments = len(arguments) == 3 
+    
+        self.gui_samp_rate = gui_samp_rate = 20 if not hasArguments else int(sys.argv[2])
         self.samp_rate = samp_rate = gui_samp_rate * 1e6
-        self.gui_directory = gui_directory = "/home/eamedina/Documentos/freq_docs/new"
+        self.gui_directory = gui_directory = "/home/eamedina/Documentos/freq_docs/new" if not hasArguments else sys.argv[1]
         self.freq_min = freq_min = 0
         self.gui_update_btn = gui_update_btn = 0
         self.gui_time_switch = gui_time_switch = 50
+        self.gui_fft_size = gui_fft_size = 1024 if not hasArguments else float(sys.argv[3])
         self.time_switch = gui_time_switch
         self.freq_max = freq_max = 6000e6
         self.freq = freq = freq_min+(samp_rate/2)
@@ -110,26 +115,41 @@ class top_block(gr.top_block, Qt.QWidget):
         self._gui_samp_rate_tool_bar = Qt.QToolBar(self)
         self._gui_samp_rate_tool_bar.addWidget(Qt.QLabel('Sample Rate'+": "))
         self._gui_samp_rate_combo_box = Qt.QComboBox()
-        
+        self._gui_samp_rate_combo_box.setEnabled(False)
+        self._gui_samp_rate_tool_bar.addWidget(self._gui_samp_rate_combo_box)
         for label in self._gui_samp_rate_labels: self._gui_samp_rate_combo_box.addItem(label)
         self._gui_samp_rate_callback = lambda i: Qt.QMetaObject.invokeMethod(self._gui_samp_rate_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._gui_samp_rate_options.index(i)))
         self._gui_samp_rate_callback(self.gui_samp_rate)
         self._gui_samp_rate_combo_box.currentIndexChanged.connect(
         	lambda i: self.set_gui_samp_rate(self._gui_samp_rate_options[i]))
-            
+        
+
+        self._gui_fft_size_options = (1024, 2048, )
+        self._gui_fft_size_labels = (str(self._gui_fft_size_options[0]), str(self._gui_fft_size_options[1]), )
+        self._gui_fft_size_tool_bar = Qt.QToolBar(self)
+        self._gui_fft_size_tool_bar.addWidget(Qt.QLabel('FFT size'+": "))
+        self._gui_fft_size_combo_box = Qt.QComboBox()
+        self._gui_fft_size_tool_bar.addWidget(self._gui_fft_size_combo_box)
+        self._gui_fft_size_combo_box.setEnabled(False)
+        for label in self._gui_fft_size_labels: self._gui_fft_size_combo_box.addItem(label)
+        self._gui_fft_size_callback = lambda i: Qt.QMetaObject.invokeMethod(self._gui_fft_size_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._gui_fft_size_options.index(i)))
+        self._gui_fft_size_callback(self.gui_fft_size)
+        self._gui_fft_size_combo_box.currentIndexChanged.connect(
+            lambda i: self.set_gui_fft_size(self._gui_fft_size_options[i]))
+
         self._gui_directory_tool_bar = Qt.QToolBar(self)
         self._gui_directory_tool_bar.addWidget(Qt.QLabel('Directory'+": "))
         self._gui_directory_line_edit = Qt.QLineEdit(str(self.gui_directory))
+        self._gui_directory_line_edit.setReadOnly(True)
         self._gui_directory_tool_bar.addWidget(self._gui_directory_line_edit)
         self._gui_directory_line_edit.returnPressed.connect(
         	lambda: self.set_gui_directory(str(str(self._gui_directory_line_edit.text().toAscii()))))
         
-        self.top_layout.addWidget(self._gui_samp_rate_tool_bar)
-        self._gui_samp_rate_tool_bar.addWidget(self._gui_samp_rate_combo_box)
         self.top_layout.addWidget(self._gui_directory_tool_bar)
+        self.top_layout.addWidget(self._gui_samp_rate_tool_bar)
+        self.top_layout.addWidget(self._gui_fft_size_tool_bar)
         self.top_layout.addWidget(self._gui_time_switch_win)
-     #   self.top_layout.addWidget(_gui_update_btn_push_button)
-
+     
         ##################################################
         # Connections
         ##################################################
@@ -229,6 +249,14 @@ class top_block(gr.top_block, Qt.QWidget):
 
     def set_directory(self, directory):
         self.directory = directory
+
+    def get_gui_fft_size(self):
+        return self.gui_fft_size
+
+    def set_gui_fft_size(self, gui_fft_size):
+        self.gui_fft_size = gui_fft_size
+        self.fft_size = gui_fft_size
+        self._gui_fft_size_callback(self.gui_fft_size)
 
 def main(top_block_cls=top_block, options=None):
 

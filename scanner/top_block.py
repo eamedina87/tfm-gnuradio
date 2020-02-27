@@ -2,10 +2,8 @@
 # -*- coding: utf-8 -*-
 ##################################################
 # GNU Radio Python Flow Graph
-# Title: Drone Detection
-# Author: Erick Medina Moreno
-# Description: Pool of scripts that run different processes to detect  drones
-# Generated: Tue Feb 25 13:04:36 2020
+# Title: Top Block
+# Generated: Wed Feb 26 22:41:59 2020
 ##################################################
 
 from distutils.version import StrictVersion
@@ -29,16 +27,19 @@ from gnuradio.eng_option import eng_option
 from gnuradio.filter import firdes
 from gnuradio.qtgui import Range, RangeWidget
 from optparse import OptionParser
+import osmosdr
 import sys
+import tfm
+import time
 from gnuradio import qtgui
 
 
 class top_block(gr.top_block, Qt.QWidget):
 
     def __init__(self):
-        gr.top_block.__init__(self, "Drone Detection")
+        gr.top_block.__init__(self, "Top Block")
         Qt.QWidget.__init__(self)
-        self.setWindowTitle("Drone Detection")
+        self.setWindowTitle("Top Block")
         qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
@@ -66,180 +67,161 @@ class top_block(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.update_graph_button = update_graph_button = 0
-        self.spectrum_scan_button = spectrum_scan_button = 0
-        self.samp_rate_chooser = samp_rate_chooser = 20
-        self.jammer_button = jammer_button = 0
-        self.graphic_band_choose = graphic_band_choose = 0
-        self.fft_size_chooser = fft_size_chooser = 1024
-        self.directory_entry = directory_entry = 'home'
-        self.center_freq_range = center_freq_range = 3000
-        self.base_scan_button = base_scan_button = 0
-        self.bandwidth_range = bandwidth_range = 20
-        self.band_scan_button = band_scan_button = 0
+        self.gui_samp_rate = gui_samp_rate = 20
+        self.samp_rate = samp_rate = gui_samp_rate * 1e6
+        self.gui_directory = gui_directory = "/home/eamedina/Documentos/freq_docs/fft"
+        self.freq_min = freq_min = 0
+        self.gui_update_btn = gui_update_btn = 0
+        self.gui_time_switch = gui_time_switch = 50
+        self.gui_fft_size = gui_fft_size = 1024
+        self.freq_max = freq_max = 6000e6
+        self.freq = freq = freq_min+(samp_rate/2)
+        self.fft_size = fft_size = 1024
+        self.directory = directory = gui_directory
 
         ##################################################
         # Blocks
         ##################################################
-        _update_graph_button_push_button = Qt.QPushButton('Update Graph')
-        self._update_graph_button_choices = {'Pressed': 1, 'Released': 0}
-        _update_graph_button_push_button.pressed.connect(lambda: self.set_update_graph_button(self._update_graph_button_choices['Pressed']))
-        _update_graph_button_push_button.released.connect(lambda: self.set_update_graph_button(self._update_graph_button_choices['Released']))
-        self.top_layout.addWidget(_update_graph_button_push_button)
+        self.tfm_power_analyzer_ff_0_0 = tfm.power_analyzer_ff(self.samp_rate, self.freq, self.fft_size, self.directory)
+        self.tfm_logpowerfft_win_0 = tfm.logpowerfft_win(self.samp_rate, self.fft_size, 2, 30)
+        self.osmosdr_source_0 = osmosdr.source( args="numchan=" + str(1) + " " + '' )
+        self.osmosdr_source_0.set_sample_rate(samp_rate)
+        self.osmosdr_source_0.set_center_freq(freq, 0)
+        self.osmosdr_source_0.set_freq_corr(0, 0)
+        self.osmosdr_source_0.set_dc_offset_mode(1, 0)
+        self.osmosdr_source_0.set_iq_balance_mode(0, 0)
+        self.osmosdr_source_0.set_gain_mode(False, 0)
+        self.osmosdr_source_0.set_gain(0, 0)
+        self.osmosdr_source_0.set_if_gain(0, 0)
+        self.osmosdr_source_0.set_bb_gain(0, 0)
+        self.osmosdr_source_0.set_antenna('', 0)
+        self.osmosdr_source_0.set_bandwidth(0, 0)
 
-        _spectrum_scan_button_push_button = Qt.QPushButton('Spectrum Scan')
-        self._spectrum_scan_button_choices = {'Pressed': 1, 'Released': 0}
-        _spectrum_scan_button_push_button.pressed.connect(lambda: self.set_spectrum_scan_button(self._spectrum_scan_button_choices['Pressed']))
-        _spectrum_scan_button_push_button.released.connect(lambda: self.set_spectrum_scan_button(self._spectrum_scan_button_choices['Released']))
-        self.top_layout.addWidget(_spectrum_scan_button_push_button)
-        
-        self._samp_rate_chooser_options = (10, 20, )
-        self._samp_rate_chooser_labels = ('10 Msps', '20 Msps', )
-        self._samp_rate_chooser_tool_bar = Qt.QToolBar(self)
-        self._samp_rate_chooser_tool_bar.addWidget(Qt.QLabel('Sample Rate'+": "))
-        self._samp_rate_chooser_combo_box = Qt.QComboBox()
-        self._samp_rate_chooser_tool_bar.addWidget(self._samp_rate_chooser_combo_box)
-        for label in self._samp_rate_chooser_labels: self._samp_rate_chooser_combo_box.addItem(label)
-        self._samp_rate_chooser_callback = lambda i: Qt.QMetaObject.invokeMethod(self._samp_rate_chooser_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._samp_rate_chooser_options.index(i)))
-        self._samp_rate_chooser_callback(self.samp_rate_chooser)
-        self._samp_rate_chooser_combo_box.currentIndexChanged.connect(
-        	lambda i: self.set_samp_rate_chooser(self._samp_rate_chooser_options[i]))
-        self.top_layout.addWidget(self._samp_rate_chooser_tool_bar)
-        
-        _jammer_button_push_button = Qt.QPushButton('Jammer')
-        self._jammer_button_choices = {'Pressed': 1, 'Released': 0}
-        _jammer_button_push_button.pressed.connect(lambda: self.set_jammer_button(self._jammer_button_choices['Pressed']))
-        _jammer_button_push_button.released.connect(lambda: self.set_jammer_button(self._jammer_button_choices['Released']))
-        self.top_layout.addWidget(_jammer_button_push_button)
-        
-        self._graphic_band_choose_options = (0, 1, 2, )
-        self._graphic_band_choose_labels = (str(self._graphic_band_choose_options[0]), str(self._graphic_band_choose_options[1]), str(self._graphic_band_choose_options[2]), )
-        self._graphic_band_choose_tool_bar = Qt.QToolBar(self)
-        self._graphic_band_choose_tool_bar.addWidget(Qt.QLabel("graphic_band_choose"+": "))
-        self._graphic_band_choose_combo_box = Qt.QComboBox()
-        self._graphic_band_choose_tool_bar.addWidget(self._graphic_band_choose_combo_box)
-        for label in self._graphic_band_choose_labels: self._graphic_band_choose_combo_box.addItem(label)
-        self._graphic_band_choose_callback = lambda i: Qt.QMetaObject.invokeMethod(self._graphic_band_choose_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._graphic_band_choose_options.index(i)))
-        self._graphic_band_choose_callback(self.graphic_band_choose)
-        self._graphic_band_choose_combo_box.currentIndexChanged.connect(
-        	lambda i: self.set_graphic_band_choose(self._graphic_band_choose_options[i]))
-        self.top_layout.addWidget(self._graphic_band_choose_tool_bar)
-        
-        self._fft_size_chooser_options = (1024, 2048, )
-        self._fft_size_chooser_labels = (str(self._fft_size_chooser_options[0]), str(self._fft_size_chooser_options[1]), )
-        self._fft_size_chooser_tool_bar = Qt.QToolBar(self)
-        self._fft_size_chooser_tool_bar.addWidget(Qt.QLabel('FFT Size'+": "))
-        self._fft_size_chooser_combo_box = Qt.QComboBox()
-        self._fft_size_chooser_tool_bar.addWidget(self._fft_size_chooser_combo_box)
-        for label in self._fft_size_chooser_labels: self._fft_size_chooser_combo_box.addItem(label)
-        self._fft_size_chooser_callback = lambda i: Qt.QMetaObject.invokeMethod(self._fft_size_chooser_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._fft_size_chooser_options.index(i)))
-        self._fft_size_chooser_callback(self.fft_size_chooser)
-        self._fft_size_chooser_combo_box.currentIndexChanged.connect(
-        	lambda i: self.set_fft_size_chooser(self._fft_size_chooser_options[i]))
-        self.top_layout.addWidget(self._fft_size_chooser_tool_bar)
-        
-        self._directory_entry_tool_bar = Qt.QToolBar(self)
-        self._directory_entry_tool_bar.addWidget(Qt.QLabel('Directory'+": "))
-        self._directory_entry_line_edit = Qt.QLineEdit(str(self.directory_entry))
-        self._directory_entry_tool_bar.addWidget(self._directory_entry_line_edit)
-        self._directory_entry_line_edit.returnPressed.connect(
-        	lambda: self.set_directory_entry(str(str(self._directory_entry_line_edit.text().toAscii()))))
-        self.top_layout.addWidget(self._directory_entry_tool_bar)
-        
-        self._center_freq_range_range = Range(10, 6000, 10, 3000, 200)
-        self._center_freq_range_win = RangeWidget(self._center_freq_range_range, self.set_center_freq_range, 'Center Frequency', "counter_slider", float)
-        self.top_layout.addWidget(self._center_freq_range_win)
-        
-        _base_scan_button_push_button = Qt.QPushButton('Base Scan')
-        self._base_scan_button_choices = {'Pressed': 1, 'Released': 0}
-        _base_scan_button_push_button.pressed.connect(lambda: self.set_base_scan_button(self._base_scan_button_choices['Pressed']))
-        _base_scan_button_push_button.released.connect(lambda: self.set_base_scan_button(self._base_scan_button_choices['Released']))
-        self.top_layout.addWidget(_base_scan_button_push_button)
-        
-        self._bandwidth_range_range = Range(10, 6000, 10, 20, 200)
-        self._bandwidth_range_win = RangeWidget(self._bandwidth_range_range, self.set_bandwidth_range, 'Bandwidth', "counter_slider", float)
-        self.top_layout.addWidget(self._bandwidth_range_win)
-        
-        _band_scan_button_push_button = Qt.QPushButton('Band Scan')
-        self._band_scan_button_choices = {'Pressed': 1, 'Released': 0}
-        _band_scan_button_push_button.pressed.connect(lambda: self.set_band_scan_button(self._band_scan_button_choices['Pressed']))
-        _band_scan_button_push_button.released.connect(lambda: self.set_band_scan_button(self._band_scan_button_choices['Released']))
-        self.top_layout.addWidget(_band_scan_button_push_button)
+        _gui_update_btn_push_button = Qt.QPushButton('Update Params')
+        self._gui_update_btn_choices = {'Pressed': 1, 'Released': 0}
+        _gui_update_btn_push_button.pressed.connect(lambda: self.set_gui_update_btn(self._gui_update_btn_choices['Pressed']))
+        _gui_update_btn_push_button.released.connect(lambda: self.set_gui_update_btn(self._gui_update_btn_choices['Released']))
+        self.top_layout.addWidget(_gui_update_btn_push_button)
+        self._gui_time_switch_range = Range(50, 1500, 50, 50, 200)
+        self._gui_time_switch_win = RangeWidget(self._gui_time_switch_range, self.set_gui_time_switch, 'Frequency Switch Time (ms)', "counter_slider", float)
+        self.top_layout.addWidget(self._gui_time_switch_win)
+        self._gui_samp_rate_options = (10, 20, )
+        self._gui_samp_rate_labels = ('10 Msps', '20 Msps', )
+        self._gui_samp_rate_tool_bar = Qt.QToolBar(self)
+        self._gui_samp_rate_tool_bar.addWidget(Qt.QLabel('Sample Rate'+": "))
+        self._gui_samp_rate_combo_box = Qt.QComboBox()
+        self._gui_samp_rate_tool_bar.addWidget(self._gui_samp_rate_combo_box)
+        for label in self._gui_samp_rate_labels: self._gui_samp_rate_combo_box.addItem(label)
+        self._gui_samp_rate_callback = lambda i: Qt.QMetaObject.invokeMethod(self._gui_samp_rate_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._gui_samp_rate_options.index(i)))
+        self._gui_samp_rate_callback(self.gui_samp_rate)
+        self._gui_samp_rate_combo_box.currentIndexChanged.connect(
+        	lambda i: self.set_gui_samp_rate(self._gui_samp_rate_options[i]))
+        self.top_layout.addWidget(self._gui_samp_rate_tool_bar)
+        self._gui_fft_size_options = (1024, 2048, )
+        self._gui_fft_size_labels = (str(self._gui_fft_size_options[0]), str(self._gui_fft_size_options[1]), )
+        self._gui_fft_size_tool_bar = Qt.QToolBar(self)
+        self._gui_fft_size_tool_bar.addWidget(Qt.QLabel('FFT size'+": "))
+        self._gui_fft_size_combo_box = Qt.QComboBox()
+        self._gui_fft_size_tool_bar.addWidget(self._gui_fft_size_combo_box)
+        for label in self._gui_fft_size_labels: self._gui_fft_size_combo_box.addItem(label)
+        self._gui_fft_size_callback = lambda i: Qt.QMetaObject.invokeMethod(self._gui_fft_size_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._gui_fft_size_options.index(i)))
+        self._gui_fft_size_callback(self.gui_fft_size)
+        self._gui_fft_size_combo_box.currentIndexChanged.connect(
+        	lambda i: self.set_gui_fft_size(self._gui_fft_size_options[i]))
+        self.top_layout.addWidget(self._gui_fft_size_tool_bar)
+        self._gui_directory_tool_bar = Qt.QToolBar(self)
+        self._gui_directory_tool_bar.addWidget(Qt.QLabel('Directory'+": "))
+        self._gui_directory_line_edit = Qt.QLineEdit(str(self.gui_directory))
+        self._gui_directory_tool_bar.addWidget(self._gui_directory_line_edit)
+        self._gui_directory_line_edit.returnPressed.connect(
+        	lambda: self.set_gui_directory(str(str(self._gui_directory_line_edit.text().toAscii()))))
+        self.top_layout.addWidget(self._gui_directory_tool_bar)
+
+        ##################################################
+        # Connections
+        ##################################################
+        self.connect((self.osmosdr_source_0, 0), (self.tfm_logpowerfft_win_0, 0))
+        self.connect((self.tfm_logpowerfft_win_0, 0), (self.tfm_power_analyzer_ff_0_0, 0))
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "top_block")
         self.settings.setValue("geometry", self.saveGeometry())
         event.accept()
 
-    def get_update_graph_button(self):
-        return self.update_graph_button
+    def get_gui_samp_rate(self):
+        return self.gui_samp_rate
 
-    def set_update_graph_button(self, update_graph_button):
-        self.update_graph_button = update_graph_button
+    def set_gui_samp_rate(self, gui_samp_rate):
+        self.gui_samp_rate = gui_samp_rate
+        self.set_samp_rate(self.gui_samp_rate * 1e6)
+        self._gui_samp_rate_callback(self.gui_samp_rate)
 
-    def get_spectrum_scan_button(self):
-        return self.spectrum_scan_button
+    def get_samp_rate(self):
+        return self.samp_rate
 
-    def set_spectrum_scan_button(self, spectrum_scan_button):
-        self.spectrum_scan_button = spectrum_scan_button
+    def set_samp_rate(self, samp_rate):
+        self.samp_rate = samp_rate
+        self.set_freq(self.freq_min+(self.samp_rate/2))
+        self.osmosdr_source_0.set_sample_rate(self.samp_rate)
 
-    def get_samp_rate_chooser(self):
-        return self.samp_rate_chooser
+    def get_gui_directory(self):
+        return self.gui_directory
 
-    def set_samp_rate_chooser(self, samp_rate_chooser):
-        self.samp_rate_chooser = samp_rate_chooser
-        self._samp_rate_chooser_callback(self.samp_rate_chooser)
+    def set_gui_directory(self, gui_directory):
+        self.gui_directory = gui_directory
+        self.set_directory(self.gui_directory)
+        Qt.QMetaObject.invokeMethod(self._gui_directory_line_edit, "setText", Qt.Q_ARG("QString", str(self.gui_directory)))
 
-    def get_jammer_button(self):
-        return self.jammer_button
+    def get_freq_min(self):
+        return self.freq_min
 
-    def set_jammer_button(self, jammer_button):
-        self.jammer_button = jammer_button
+    def set_freq_min(self, freq_min):
+        self.freq_min = freq_min
+        self.set_freq(self.freq_min+(self.samp_rate/2))
 
-    def get_graphic_band_choose(self):
-        return self.graphic_band_choose
+    def get_gui_update_btn(self):
+        return self.gui_update_btn
 
-    def set_graphic_band_choose(self, graphic_band_choose):
-        self.graphic_band_choose = graphic_band_choose
-        self._graphic_band_choose_callback(self.graphic_band_choose)
+    def set_gui_update_btn(self, gui_update_btn):
+        self.gui_update_btn = gui_update_btn
 
-    def get_fft_size_chooser(self):
-        return self.fft_size_chooser
+    def get_gui_time_switch(self):
+        return self.gui_time_switch
 
-    def set_fft_size_chooser(self, fft_size_chooser):
-        self.fft_size_chooser = fft_size_chooser
-        self._fft_size_chooser_callback(self.fft_size_chooser)
+    def set_gui_time_switch(self, gui_time_switch):
+        self.gui_time_switch = gui_time_switch
 
-    def get_directory_entry(self):
-        return self.directory_entry
+    def get_gui_fft_size(self):
+        return self.gui_fft_size
 
-    def set_directory_entry(self, directory_entry):
-        self.directory_entry = directory_entry
-        Qt.QMetaObject.invokeMethod(self._directory_entry_line_edit, "setText", Qt.Q_ARG("QString", str(self.directory_entry)))
+    def set_gui_fft_size(self, gui_fft_size):
+        self.gui_fft_size = gui_fft_size
+        self._gui_fft_size_callback(self.gui_fft_size)
 
-    def get_center_freq_range(self):
-        return self.center_freq_range
+    def get_freq_max(self):
+        return self.freq_max
 
-    def set_center_freq_range(self, center_freq_range):
-        self.center_freq_range = center_freq_range
+    def set_freq_max(self, freq_max):
+        self.freq_max = freq_max
 
-    def get_base_scan_button(self):
-        return self.base_scan_button
+    def get_freq(self):
+        return self.freq
 
-    def set_base_scan_button(self, base_scan_button):
-        self.base_scan_button = base_scan_button
+    def set_freq(self, freq):
+        self.freq = freq
+        self.osmosdr_source_0.set_center_freq(self.freq, 0)
 
-    def get_bandwidth_range(self):
-        return self.bandwidth_range
+    def get_fft_size(self):
+        return self.fft_size
 
-    def set_bandwidth_range(self, bandwidth_range):
-        self.bandwidth_range = bandwidth_range
+    def set_fft_size(self, fft_size):
+        self.fft_size = fft_size
 
-    def get_band_scan_button(self):
-        return self.band_scan_button
+    def get_directory(self):
+        return self.directory
 
-    def set_band_scan_button(self, band_scan_button):
-        self.band_scan_button = band_scan_button
+    def set_directory(self, directory):
+        self.directory = directory
 
 
 def main(top_block_cls=top_block, options=None):
