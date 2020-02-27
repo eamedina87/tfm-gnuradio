@@ -375,7 +375,7 @@ class top_block(gr.top_block, Qt.QWidget):
     def readFilesForFreq(self, center_freq, samp_rate, fft_size, powers, freqs, compare_powers, compare_freqs, _list):
         file_base_power = "power_%.0fMHz_%.0fMsps_%dFFT" % (center_freq // 1e6, samp_rate // 1e6, fft_size)
         filename_power = "{dir}/{file}.txt".format(dir=self.directory, file=file_base_power)
-        file_base_compare = "compare_%.0fMHz_%.0fMsps_%dFFT_1m_1pc_1db" % (center_freq // 1e6, samp_rate // 1e6, fft_size)
+        file_base_compare = "compare_%.0fMHz_%.0fMsps_%dFFT" % (center_freq // 1e6, samp_rate // 1e6, fft_size)
         filename_compare = "{dir}/{file}.txt".format(dir=self.directory, file=file_base_compare)
         compare_exists = False
         try:

@@ -63,20 +63,16 @@ class power_comparator_ff(gr.sync_block):
     def work(self, input_items, output_items):
         in0 = input_items[0]
         file_base_power = "power_%.0fMHz_%.0fMsps_%dFFT" % (self.center_freq // 1e6, self.samp_rate // 1e6, self.vlen)
-        file_base_compare = "compare_%.0fMHz_%.0fMsps_%dFFT_%.0fm_%.0fpc" % (self.center_freq // 1e6, self.samp_rate // 1e6, 
-            self.vlen, self.mode,self.diff_percentage) if self.mode == 1 else "compare_%.0fMHz_%.0fMsps_%dFFT_%.0fm_%.0fdb" % (self.center_freq // 1e6, self.samp_rate // 1e6, 
-            self.vlen, self.mode,self.diff_db)
+        file_base_compare = "compare_%.0fMHz_%.0fMsps_%dFFT" % (self.center_freq // 1e6, self.samp_rate // 1e6, self.vlen)
         filename_power = "{dir}/{file}.txt".format(dir=self.directory, file=file_base_power)
         filename_result = "{dir}/{file}.txt".format(dir=self.directory,file=file_base_compare)
         filename_result_temp = "{dir}/{file}_tmp.txt".format(dir=self.directory,file=file_base_compare)
         filename_log = "{dir}/log.txt".format(dir=self.directory)
-        #print(filename)
         in0 = input_items[0]
         start_freq = self.center_freq - self.samp_rate / 2
         log_file = open(filename_log, 'a+')
         log_file.write(datetime.now().strftime('%Y%m%d %H:%M:%S:%f')+" ")
         log_file.write("files: " + filename_power+ ";" + filename_result +"\n")
-        #shifted = numpy.fft.fftshift(in0)
         for i, value in enumerate(in0):
             file_power_exists = False
             try:
