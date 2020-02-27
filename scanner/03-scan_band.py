@@ -69,10 +69,14 @@ class top_block(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.gui_samp_rate = gui_samp_rate = 20
+
+        arguments = sys.argv[1:]
+        hasArguments = len(arguments) == 3 
+
+        self.gui_samp_rate = gui_samp_rate = 20 if not hasArguments else int(sys.argv[2])
         self.samp_rate = samp_rate = gui_samp_rate*1e6
-        self.gui_fft_size = gui_fft_size = 1024
-        self.gui_directory = gui_directory = "/home/eamedina/Documentos/freq_docs/fft"
+        self.gui_fft_size = gui_fft_size = 1024 if not hasArguments else int(sys.argv[3])
+        self.gui_directory = gui_directory = "/home/eamedina/Documentos/freq_docs/fft" if not hasArguments else sys.argv[1]
         self.freq_min = freq_min = 420e6
         self.variable_qtgui_chooser_0 = variable_qtgui_chooser_0 = 0
         self.gui_mode_value = gui_mode_value = 1
@@ -139,6 +143,7 @@ class top_block(gr.top_block, Qt.QWidget):
         self._gui_samp_rate_tool_bar = Qt.QToolBar(self)
         self._gui_samp_rate_tool_bar.addWidget(Qt.QLabel('Sample Rate'+": "))
         self._gui_samp_rate_combo_box = Qt.QComboBox()
+        self._gui_samp_rate_combo_box.setEnabled(False)
         self._gui_samp_rate_tool_bar.addWidget(self._gui_samp_rate_combo_box)
         for label in self._gui_samp_rate_labels: self._gui_samp_rate_combo_box.addItem(label)
         self._gui_samp_rate_callback = lambda i: Qt.QMetaObject.invokeMethod(self._gui_samp_rate_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._gui_samp_rate_options.index(i)))
@@ -163,6 +168,7 @@ class top_block(gr.top_block, Qt.QWidget):
         self._gui_fft_size_tool_bar = Qt.QToolBar(self)
         self._gui_fft_size_tool_bar.addWidget(Qt.QLabel('FFT size'+": "))
         self._gui_fft_size_combo_box = Qt.QComboBox()
+        self._gui_fft_size_combo_box.setEnabled(False)
         self._gui_fft_size_tool_bar.addWidget(self._gui_fft_size_combo_box)
         for label in self._gui_fft_size_labels: self._gui_fft_size_combo_box.addItem(label)
         self._gui_fft_size_callback = lambda i: Qt.QMetaObject.invokeMethod(self._gui_fft_size_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._gui_fft_size_options.index(i)))
@@ -173,14 +179,15 @@ class top_block(gr.top_block, Qt.QWidget):
         self._gui_directory_tool_bar = Qt.QToolBar(self)
         self._gui_directory_tool_bar.addWidget(Qt.QLabel('Directory'+": "))
         self._gui_directory_line_edit = Qt.QLineEdit(str(self.gui_directory))
+        self._gui_directory_line_edit.setReadOnly(True)
         self._gui_directory_tool_bar.addWidget(self._gui_directory_line_edit)
         self._gui_directory_line_edit.returnPressed.connect(
         	lambda: self.set_gui_directory(str(str(self._gui_directory_line_edit.text().toAscii()))))
         
-        self.top_layout.addWidget(self._variable_qtgui_chooser_0_tool_bar)
+        self.top_layout.addWidget(self._gui_directory_tool_bar)
         self.top_layout.addWidget(self._gui_samp_rate_tool_bar)
         self.top_layout.addWidget(self._gui_fft_size_tool_bar)
-        self.top_layout.addWidget(self._gui_directory_tool_bar)
+        self.top_layout.addWidget(self._variable_qtgui_chooser_0_tool_bar)
         self.top_layout.addWidget(self._gui_mode_tool_bar)
         self.top_layout.addWidget(self._gui_mode_value_win)
         self.top_layout.addWidget(self._qtgui_sink_x_0_win)

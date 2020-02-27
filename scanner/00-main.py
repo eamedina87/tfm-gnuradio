@@ -331,6 +331,8 @@ class top_block(gr.top_block, Qt.QWidget):
         self.plotNewValues(freqs, powers, compare_freqs, compare_powers)    
 
     def addValuesToTable(self, value_list):
+        if len(value_list) == 0:
+            return
         _list = sorted(value_list, key=self.getKey, reverse=self.table_sort_reverse)
         self.tableWidget.setRowCount(len(value_list))
         self.tableWidget.setColumnCount(len(value_list[0]))
@@ -446,7 +448,7 @@ class top_block(gr.top_block, Qt.QWidget):
     def set_band_scan_button(self, band_scan_button):
         self.band_scan_button = band_scan_button
         if (band_scan_button == 1):
-            subprocess.call("./03-scan_band.py")
+            subprocess.call("./03-scan_band.py {arg1} {arg2} {arg3}".format(arg1=self.directory, arg2=int(self.samp_rate//1e6), arg3=self.fft_size),shell=True)
 
     def get_jammer_button(self):
         return self.jammer_button
