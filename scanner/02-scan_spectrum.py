@@ -67,9 +67,13 @@ class top_block(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.gui_samp_rate = gui_samp_rate = 20
+
+        arguments = sys.argv[1:]
+        hasArguments = len(arguments) == 3 
+
+        self.gui_samp_rate = gui_samp_rate = 20 if not hasArguments else int(sys.argv[2])
         self.samp_rate = samp_rate = gui_samp_rate*1e6
-        self.gui_fft_size = gui_fft_size = 1024
+        self.gui_fft_size = gui_fft_size = 1024 if not hasArguments else int(sys.argv[3])
         self.fft_size = fft_size = gui_fft_size
         self.gui_time_switch = gui_time_switch = 100
         self.time_switch = time_switch = gui_time_switch
@@ -77,7 +81,7 @@ class top_block(gr.top_block, Qt.QWidget):
         self.freq_min = freq_min = gui_freq_min
         self.gui_freq_max = gui_freq_max = 6000e6
         self.freq_max = freq_max = gui_freq_max
-        self.gui_directory = gui_directory = "/home/eamedina/Documentos/freq_docs/new"
+        self.gui_directory = gui_directory = "/home/eamedina/Documentos/freq_docs/new" if not hasArguments else sys.argv[1]
         self.gui_mode_value = gui_mode_value = 1
         self.gui_mode = gui_mode = 1
         self.freq = freq = freq_min+(samp_rate/2)
@@ -89,7 +93,7 @@ class top_block(gr.top_block, Qt.QWidget):
         self._gui_mode_value_range = Range(1, 100, 1, 1, 100)
         self._gui_mode_value_win = RangeWidget(self._gui_mode_value_range, self.set_gui_mode_value, 'Mode Value (% or db)', "counter_slider", float)
         
-        self._gui_freq_min_range = Range(0, 6000-samp_rate/1e6, samp_rate/1e6, 0, 200)
+        self._gui_freq_min_range = Range(0, 6000-self.samp_rate/1e6, self.samp_rate/1e6, 0, 200)
         self._gui_freq_min_win = RangeWidget(self._gui_freq_min_range, self.set_gui_freq_min, 'Lower Frequency (MHz)', "counter_slider", float)
         
         self.tfm_power_comparator_ff_0 = tfm.power_comparator_ff(self.samp_rate, self.freq, self.fft_size, self.directory, gui_mode, gui_mode_value, gui_mode_value)
@@ -115,6 +119,7 @@ class top_block(gr.top_block, Qt.QWidget):
         self._gui_samp_rate_tool_bar = Qt.QToolBar(self)
         self._gui_samp_rate_tool_bar.addWidget(Qt.QLabel('Sample Rate'+": "))
         self._gui_samp_rate_combo_box = Qt.QComboBox()
+        self._gui_samp_rate_combo_box.setEnabled(False)
         self._gui_samp_rate_tool_bar.addWidget(self._gui_samp_rate_combo_box)
         for label in self._gui_samp_rate_labels: self._gui_samp_rate_combo_box.addItem(label)
         self._gui_samp_rate_callback = lambda i: Qt.QMetaObject.invokeMethod(self._gui_samp_rate_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._gui_samp_rate_options.index(i)))
@@ -142,6 +147,7 @@ class top_block(gr.top_block, Qt.QWidget):
         self._gui_fft_size_tool_bar = Qt.QToolBar(self)
         self._gui_fft_size_tool_bar.addWidget(Qt.QLabel('FFT size'+": "))
         self._gui_fft_size_combo_box = Qt.QComboBox()
+        self._gui_fft_size_combo_box.setEnabled(False)
         self._gui_fft_size_tool_bar.addWidget(self._gui_fft_size_combo_box)
         for label in self._gui_fft_size_labels: self._gui_fft_size_combo_box.addItem(label)
         self._gui_fft_size_callback = lambda i: Qt.QMetaObject.invokeMethod(self._gui_fft_size_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._gui_fft_size_options.index(i)))
@@ -152,17 +158,18 @@ class top_block(gr.top_block, Qt.QWidget):
         self._gui_directory_tool_bar = Qt.QToolBar(self)
         self._gui_directory_tool_bar.addWidget(Qt.QLabel('Directory'+": "))
         self._gui_directory_line_edit = Qt.QLineEdit(str(self.gui_directory))
+        self._gui_directory_line_edit.setReadOnly(True)
         self._gui_directory_tool_bar.addWidget(self._gui_directory_line_edit)
         self._gui_directory_line_edit.returnPressed.connect(
         	lambda: self.set_gui_directory(str(str(self._gui_directory_line_edit.text().toAscii()))))
 
+        self.top_layout.addWidget(self._gui_directory_tool_bar)
         self.top_layout.addWidget(self._gui_samp_rate_tool_bar)
         self.top_layout.addWidget(self._gui_fft_size_tool_bar)
         self.top_layout.addWidget(self._gui_freq_min_win)
         self.top_layout.addWidget(self._gui_freq_max_win)
         self.top_layout.addWidget(self._gui_mode_tool_bar)
         self.top_layout.addWidget(self._gui_mode_value_win)
-        self.top_layout.addWidget(self._gui_directory_tool_bar)
         self.top_layout.addWidget(self._gui_time_switch_win)
         
         ##################################################
