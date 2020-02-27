@@ -485,7 +485,8 @@ class top_block(gr.top_block, Qt.QWidget):
     def set_samp_rate_chooser(self, samp_rate_chooser):
         self.samp_rate_chooser = samp_rate_chooser
         self._samp_rate_chooser_callback(self.samp_rate_chooser)
-        self.samp_rate = samp_rate_chooser
+        self.samp_rate = samp_rate_chooser * 1e6
+        print(self.samp_rate)
 
     def get_fft_size_chooser(self):
         return self.fft_size_chooser
