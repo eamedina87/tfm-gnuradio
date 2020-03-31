@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Top Block
-# Generated: Wed Feb 26 22:41:59 2020
+# Generated: Thu Feb 27 18:34:48 2020
 ##################################################
 
 from distutils.version import StrictVersion
@@ -23,11 +23,13 @@ from PyQt5 import Qt, QtCore
 from PyQt5.QtCore import QObject, pyqtSlot
 from gnuradio import eng_notation
 from gnuradio import gr
+from gnuradio import qtgui
 from gnuradio.eng_option import eng_option
 from gnuradio.filter import firdes
 from gnuradio.qtgui import Range, RangeWidget
 from optparse import OptionParser
 import osmosdr
+import sip
 import sys
 import tfm
 import time
@@ -68,28 +70,63 @@ class top_block(gr.top_block, Qt.QWidget):
         # Variables
         ##################################################
         self.gui_samp_rate = gui_samp_rate = 20
-        self.samp_rate = samp_rate = gui_samp_rate * 1e6
-        self.gui_directory = gui_directory = "/home/eamedina/Documentos/freq_docs/fft"
-        self.freq_min = freq_min = 0
-        self.gui_update_btn = gui_update_btn = 0
-        self.gui_time_switch = gui_time_switch = 50
+        self.samp_rate = samp_rate = gui_samp_rate*1e6
         self.gui_fft_size = gui_fft_size = 1024
-        self.freq_max = freq_max = 6000e6
+        self.gui_directory = gui_directory = "/home/eamedina/Documentos/freq_docs/fft"
+        self.freq_min = freq_min = 420e6
+        self.variable_qtgui_chooser_0 = variable_qtgui_chooser_0 = 0
+        self.gui_mode_value = gui_mode_value = 1
+        self.gui_mode = gui_mode = 1
+        self.freq_max = freq_max = 440e6
         self.freq = freq = freq_min+(samp_rate/2)
-        self.fft_size = fft_size = 1024
+        self.fft_size = fft_size = gui_fft_size
         self.directory = directory = gui_directory
 
         ##################################################
         # Blocks
         ##################################################
-        self.tfm_power_analyzer_ff_0_0 = tfm.power_analyzer_ff(self.samp_rate, self.freq, self.fft_size, self.directory)
+        self._gui_mode_value_range = Range(1, 100, 1, 1, 100)
+        self._gui_mode_value_win = RangeWidget(self._gui_mode_value_range, self.set_gui_mode_value, 'Mode Value (% or db)', "counter_slider", float)
+        self.top_layout.addWidget(self._gui_mode_value_win)
+        self._variable_qtgui_chooser_0_options = (0, 1, 2, 3, 4, )
+        self._variable_qtgui_chooser_0_labels = ('433 MHz', '868 MHz', 'Wifi 2.4GHz', 'Wifi 5.8 GHz', 'GPS', )
+        self._variable_qtgui_chooser_0_tool_bar = Qt.QToolBar(self)
+        self._variable_qtgui_chooser_0_tool_bar.addWidget(Qt.QLabel('Preset Bands'+": "))
+        self._variable_qtgui_chooser_0_combo_box = Qt.QComboBox()
+        self._variable_qtgui_chooser_0_tool_bar.addWidget(self._variable_qtgui_chooser_0_combo_box)
+        for label in self._variable_qtgui_chooser_0_labels: self._variable_qtgui_chooser_0_combo_box.addItem(label)
+        self._variable_qtgui_chooser_0_callback = lambda i: Qt.QMetaObject.invokeMethod(self._variable_qtgui_chooser_0_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._variable_qtgui_chooser_0_options.index(i)))
+        self._variable_qtgui_chooser_0_callback(self.variable_qtgui_chooser_0)
+        self._variable_qtgui_chooser_0_combo_box.currentIndexChanged.connect(
+        	lambda i: self.set_variable_qtgui_chooser_0(self._variable_qtgui_chooser_0_options[i]))
+        self.top_layout.addWidget(self._variable_qtgui_chooser_0_tool_bar)
+        self.tfm_power_comparator_ff_0 = tfm.power_comparator_ff(self.samp_rate, self.freq, self.fft_size, self.directory, 1, gui_mode_value, gui_mode_value)
         self.tfm_logpowerfft_win_0 = tfm.logpowerfft_win(self.samp_rate, self.fft_size, 2, 30)
+        self.qtgui_sink_x_0 = qtgui.sink_c(
+        	fft_size, #fftsize
+        	firdes.WIN_HAMMING, #wintype
+        	freq, #fc
+        	samp_rate, #bw
+        	'Band Analysis', #name
+        	True, #plotfreq
+        	True, #plotwaterfall
+        	False, #plottime
+        	False, #plotconst
+        )
+        self.qtgui_sink_x_0.set_update_time(1.0/10)
+        self._qtgui_sink_x_0_win = sip.wrapinstance(self.qtgui_sink_x_0.pyqwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_sink_x_0_win)
+
+        self.qtgui_sink_x_0.enable_rf_freq(True)
+
+
+
         self.osmosdr_source_0 = osmosdr.source( args="numchan=" + str(1) + " " + '' )
         self.osmosdr_source_0.set_sample_rate(samp_rate)
         self.osmosdr_source_0.set_center_freq(freq, 0)
         self.osmosdr_source_0.set_freq_corr(0, 0)
-        self.osmosdr_source_0.set_dc_offset_mode(1, 0)
-        self.osmosdr_source_0.set_iq_balance_mode(0, 0)
+        self.osmosdr_source_0.set_dc_offset_mode(2, 0)
+        self.osmosdr_source_0.set_iq_balance_mode(2, 0)
         self.osmosdr_source_0.set_gain_mode(False, 0)
         self.osmosdr_source_0.set_gain(0, 0)
         self.osmosdr_source_0.set_if_gain(0, 0)
@@ -97,14 +134,6 @@ class top_block(gr.top_block, Qt.QWidget):
         self.osmosdr_source_0.set_antenna('', 0)
         self.osmosdr_source_0.set_bandwidth(0, 0)
 
-        _gui_update_btn_push_button = Qt.QPushButton('Update Params')
-        self._gui_update_btn_choices = {'Pressed': 1, 'Released': 0}
-        _gui_update_btn_push_button.pressed.connect(lambda: self.set_gui_update_btn(self._gui_update_btn_choices['Pressed']))
-        _gui_update_btn_push_button.released.connect(lambda: self.set_gui_update_btn(self._gui_update_btn_choices['Released']))
-        self.top_layout.addWidget(_gui_update_btn_push_button)
-        self._gui_time_switch_range = Range(50, 1500, 50, 50, 200)
-        self._gui_time_switch_win = RangeWidget(self._gui_time_switch_range, self.set_gui_time_switch, 'Frequency Switch Time (ms)', "counter_slider", float)
-        self.top_layout.addWidget(self._gui_time_switch_win)
         self._gui_samp_rate_options = (10, 20, )
         self._gui_samp_rate_labels = ('10 Msps', '20 Msps', )
         self._gui_samp_rate_tool_bar = Qt.QToolBar(self)
@@ -117,6 +146,18 @@ class top_block(gr.top_block, Qt.QWidget):
         self._gui_samp_rate_combo_box.currentIndexChanged.connect(
         	lambda i: self.set_gui_samp_rate(self._gui_samp_rate_options[i]))
         self.top_layout.addWidget(self._gui_samp_rate_tool_bar)
+        self._gui_mode_options = (1, 2, )
+        self._gui_mode_labels = ('Percentage (%)', 'Value (db)', )
+        self._gui_mode_tool_bar = Qt.QToolBar(self)
+        self._gui_mode_tool_bar.addWidget(Qt.QLabel('Mode'+": "))
+        self._gui_mode_combo_box = Qt.QComboBox()
+        self._gui_mode_tool_bar.addWidget(self._gui_mode_combo_box)
+        for label in self._gui_mode_labels: self._gui_mode_combo_box.addItem(label)
+        self._gui_mode_callback = lambda i: Qt.QMetaObject.invokeMethod(self._gui_mode_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._gui_mode_options.index(i)))
+        self._gui_mode_callback(self.gui_mode)
+        self._gui_mode_combo_box.currentIndexChanged.connect(
+        	lambda i: self.set_gui_mode(self._gui_mode_options[i]))
+        self.top_layout.addWidget(self._gui_mode_tool_bar)
         self._gui_fft_size_options = (1024, 2048, )
         self._gui_fft_size_labels = (str(self._gui_fft_size_options[0]), str(self._gui_fft_size_options[1]), )
         self._gui_fft_size_tool_bar = Qt.QToolBar(self)
@@ -140,8 +181,9 @@ class top_block(gr.top_block, Qt.QWidget):
         ##################################################
         # Connections
         ##################################################
+        self.connect((self.osmosdr_source_0, 0), (self.qtgui_sink_x_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.tfm_logpowerfft_win_0, 0))
-        self.connect((self.tfm_logpowerfft_win_0, 0), (self.tfm_power_analyzer_ff_0_0, 0))
+        self.connect((self.tfm_logpowerfft_win_0, 0), (self.tfm_power_comparator_ff_0, 0))
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "top_block")
@@ -153,7 +195,7 @@ class top_block(gr.top_block, Qt.QWidget):
 
     def set_gui_samp_rate(self, gui_samp_rate):
         self.gui_samp_rate = gui_samp_rate
-        self.set_samp_rate(self.gui_samp_rate * 1e6)
+        self.set_samp_rate(self.gui_samp_rate*1e6)
         self._gui_samp_rate_callback(self.gui_samp_rate)
 
     def get_samp_rate(self):
@@ -162,7 +204,16 @@ class top_block(gr.top_block, Qt.QWidget):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.set_freq(self.freq_min+(self.samp_rate/2))
+        self.qtgui_sink_x_0.set_frequency_range(self.freq, self.samp_rate)
         self.osmosdr_source_0.set_sample_rate(self.samp_rate)
+
+    def get_gui_fft_size(self):
+        return self.gui_fft_size
+
+    def set_gui_fft_size(self, gui_fft_size):
+        self.gui_fft_size = gui_fft_size
+        self.set_fft_size(self.gui_fft_size)
+        self._gui_fft_size_callback(self.gui_fft_size)
 
     def get_gui_directory(self):
         return self.gui_directory
@@ -179,24 +230,25 @@ class top_block(gr.top_block, Qt.QWidget):
         self.freq_min = freq_min
         self.set_freq(self.freq_min+(self.samp_rate/2))
 
-    def get_gui_update_btn(self):
-        return self.gui_update_btn
+    def get_variable_qtgui_chooser_0(self):
+        return self.variable_qtgui_chooser_0
 
-    def set_gui_update_btn(self, gui_update_btn):
-        self.gui_update_btn = gui_update_btn
+    def set_variable_qtgui_chooser_0(self, variable_qtgui_chooser_0):
+        self.variable_qtgui_chooser_0 = variable_qtgui_chooser_0
+        self._variable_qtgui_chooser_0_callback(self.variable_qtgui_chooser_0)
 
-    def get_gui_time_switch(self):
-        return self.gui_time_switch
+    def get_gui_mode_value(self):
+        return self.gui_mode_value
 
-    def set_gui_time_switch(self, gui_time_switch):
-        self.gui_time_switch = gui_time_switch
+    def set_gui_mode_value(self, gui_mode_value):
+        self.gui_mode_value = gui_mode_value
 
-    def get_gui_fft_size(self):
-        return self.gui_fft_size
+    def get_gui_mode(self):
+        return self.gui_mode
 
-    def set_gui_fft_size(self, gui_fft_size):
-        self.gui_fft_size = gui_fft_size
-        self._gui_fft_size_callback(self.gui_fft_size)
+    def set_gui_mode(self, gui_mode):
+        self.gui_mode = gui_mode
+        self._gui_mode_callback(self.gui_mode)
 
     def get_freq_max(self):
         return self.freq_max
@@ -209,6 +261,7 @@ class top_block(gr.top_block, Qt.QWidget):
 
     def set_freq(self, freq):
         self.freq = freq
+        self.qtgui_sink_x_0.set_frequency_range(self.freq, self.samp_rate)
         self.osmosdr_source_0.set_center_freq(self.freq, 0)
 
     def get_fft_size(self):

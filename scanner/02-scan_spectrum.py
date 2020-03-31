@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 ##################################################
 # GNU Radio Python Flow Graph
-# Title: Top Block
+# Title: Scan Spectrum
+# Author: Erick Medina Moreno
+# Description: Compares real time power values with base values
 # Generated: Wed Jan 22 23:38:50 2020
 ##################################################
 
@@ -37,9 +39,9 @@ from gnuradio import qtgui
 class top_block(gr.top_block, Qt.QWidget):
 
     def __init__(self):
-        gr.top_block.__init__(self, "Top Block")
+        gr.top_block.__init__(self, "Scan Spectrum")
         Qt.QWidget.__init__(self)
-        self.setWindowTitle("Top Block")
+        self.setWindowTitle("Scan Spectrum")
         qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))

@@ -84,7 +84,7 @@ class top_block(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.directory = directory = "/home/eamedina/Documentos/freq_docs/new"
+        self.directory = directory = "/home/eamedina/Documentos/freq_docs"
         self.spectrum_scan_button = spectrum_scan_button = 0
         self.jammer_button = jammer_button = 0
         self.base_scan_button = base_scan_button = 0
@@ -247,14 +247,31 @@ class top_block(gr.top_block, Qt.QWidget):
         self.updateScanDataForFreq()
         self.startContinuosBandTimer()
         self.updateTableData()
+        #self.startUpdateTableTimer()
 
     def chooseDirectory(self):
         file = str(QFileDialog.getExistingDirectory(self, "Select Directory", self.directory))
         if len(file) > 0:
+            self.set_directory_entry(file)
             self.clearGraph()
             self.clearTable()
-            self.set_directory_entry(file)
+            self.cancelUpdateTableTimer()
+            self.updateTableData()
+            #self.startUpdateTableTimer()
             
+    def startUpdateTableTimer(self):
+        self.updateTimer = QtCore.QTimer()
+        self.updateTimer.setInterval(13000)
+        timerCallback = functools.partial(self.updateTableData)
+        self.updateTimer.timeout.connect(timerCallback)
+        self.updateTimer.start()
+
+    def cancelUpdateTableTimer(self):
+        try:
+            self.updateTimer.stop()
+        except:
+            print("All timer not initialized yet")
+
     def startUpdateAllTimer(self):
         self.timer = QtCore.QTimer()
         self.timer.setInterval(5000)
@@ -486,7 +503,6 @@ class top_block(gr.top_block, Qt.QWidget):
         self.samp_rate_chooser = samp_rate_chooser
         self._samp_rate_chooser_callback(self.samp_rate_chooser)
         self.samp_rate = samp_rate_chooser * 1e6
-        print(self.samp_rate)
 
     def get_fft_size_chooser(self):
         return self.fft_size_chooser
@@ -495,7 +511,6 @@ class top_block(gr.top_block, Qt.QWidget):
         self.fft_size_chooser = fft_size_chooser
         self._fft_size_chooser_callback(self.fft_size_chooser)
         self.fft_size = fft_size_chooser
-        print(fft_size_chooser)
 
     def get_center_freq_range(self):
         return self.center_freq_range
