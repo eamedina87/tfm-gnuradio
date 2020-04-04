@@ -93,7 +93,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(16, 428)</value>
+      <value>(160, 324)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -232,7 +232,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(728, 540)</value>
+      <value>(160, 228)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -271,7 +271,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(384, 276)</value>
+      <value>(800, 228)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -370,7 +370,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(216, 380)</value>
+      <value>(520, 228)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -469,7 +469,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(736, 260)</value>
+      <value>(944, 228)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -532,7 +532,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(376, 404)</value>
+      <value>(672, 228)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -658,7 +658,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(16, 500)</value>
+      <value>(344, 228)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -2045,7 +2045,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(160, 76)</value>
+      <value>(200, 12)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -2184,7 +2184,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(456, 4)</value>
+      <value>(464, 4)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -2334,7 +2334,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(728, 100)</value>
+      <value>(736, 4)</value>
     </param>
     <param>
       <key>_rotation</key>

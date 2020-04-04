@@ -38,9 +38,9 @@ from gnuradio import qtgui
 class top_block(gr.top_block, Qt.QWidget):
 
     def __init__(self):
-        gr.top_block.__init__(self, "Top Block")
+        gr.top_block.__init__(self, "Jammer")
         Qt.QWidget.__init__(self)
-        self.setWindowTitle("Top Block")
+        self.setWindowTitle("Jammer")
         qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
