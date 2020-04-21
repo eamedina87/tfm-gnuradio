@@ -72,20 +72,20 @@ class top_block(gr.top_block, Qt.QWidget):
 
         arguments = sys.argv[1:]
         hasArguments = len(arguments) == 3 
-    
+        
         self.gui_samp_rate = gui_samp_rate = 20 if not hasArguments else int(sys.argv[2])
         self.samp_rate = samp_rate = gui_samp_rate * 1e6
         self.gui_directory = gui_directory = "/home/eamedina/Documentos/freq_docs/new" if not hasArguments else sys.argv[1]
         self.freq_min = freq_min = 0
         self.gui_update_btn = gui_update_btn = 0
         self.gui_time_switch = gui_time_switch = 50
-        self.gui_fft_size = gui_fft_size = 1024 if not hasArguments else float(sys.argv[3])
+        self.gui_fft_size = gui_fft_size = 1024 if not hasArguments else int(sys.argv[3])
         self.time_switch = gui_time_switch
         self.freq_max = freq_max = 6000e6
         self.freq = freq = freq_min+(samp_rate/2)
-        self.fft_size = fft_size = 1024
+        self.fft_size = fft_size = gui_fft_size
         self.directory = directory = gui_directory
-
+        
         ##################################################
         # Blocks
         ##################################################

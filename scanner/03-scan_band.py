@@ -80,7 +80,7 @@ class top_block(gr.top_block, Qt.QWidget):
         self.freq_min = freq_min = 420e6
         self.variable_qtgui_chooser_0 = variable_qtgui_chooser_0 = 0
         self.gui_mode_value = gui_mode_value = 1
-        self.gui_mode = gui_mode = 1
+        self.gui_mode = gui_mode = 2
         self.freq_max = freq_max = 440e6
         self.freq = freq = freq_min+(samp_rate/2)
         self.fft_size = fft_size = gui_fft_size
@@ -89,8 +89,11 @@ class top_block(gr.top_block, Qt.QWidget):
         ##################################################
         # Blocks
         ##################################################
-        self._gui_mode_value_range = Range(1, 100, 1, 1, 100)
+        self._gui_mode_value_range = Range(1, 100, 1, 10, 100)
         self._gui_mode_value_win = RangeWidget(self._gui_mode_value_range, self.set_gui_mode_value, 'Mode Value (% or db)', "counter_slider", float)
+
+        self._gui_frequency_range = Range(samp_rate/2e6, 6e6 - samp_rate/2e6, samp_rate/1e6, freq/1e6, 6e6/samp_rate)
+        self._gui_frequency_win = RangeWidget(self._gui_frequency_range, self.set_gui_freq, 'Center Frequency', "counter_slider", float)
         
         self._variable_qtgui_chooser_0_options = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, )
         self._variable_qtgui_chooser_0_labels = ('433 MHz', '868 MHz', 'Wifi 2.4GHz (1)',
@@ -187,6 +190,7 @@ class top_block(gr.top_block, Qt.QWidget):
         self.top_layout.addWidget(self._gui_directory_tool_bar)
         self.top_layout.addWidget(self._gui_samp_rate_tool_bar)
         self.top_layout.addWidget(self._gui_fft_size_tool_bar)
+        self.top_layout.addWidget(self._gui_frequency_win)
         self.top_layout.addWidget(self._variable_qtgui_chooser_0_tool_bar)
         self.top_layout.addWidget(self._gui_mode_tool_bar)
         self.top_layout.addWidget(self._gui_mode_value_win)
@@ -316,6 +320,9 @@ class top_block(gr.top_block, Qt.QWidget):
         self.qtgui_sink_x_0.set_frequency_range(self.freq, self.samp_rate)
         self.osmosdr_source_0.set_center_freq(self.freq, 0)
         self.tfm_power_comparator_ff_0.set_center_freq(self.freq)
+
+    def set_gui_freq(self, freq):
+        self.set_freq(freq*1e6)
 
     def get_fft_size(self):
         return self.fft_size
